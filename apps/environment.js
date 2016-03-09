@@ -19,8 +19,7 @@ var Req = require("./models/drivers/http_request"),
     Wiki = require("./models/wiki_model"),
     Tdrvr = require("./models/drivers/topic_driver"),
     Udrvr = require("./models/drivers/user_driver"),
-    fs = require("fs"),
-    Environment,
+    configProperties = require("../config/config.json"),
 //TODO defaults will be replaced by config.json values
     defaults = {
         server: {
@@ -29,9 +28,9 @@ var Req = require("./models/drivers/http_request"),
         }
     };
 
-Environment = function() {
+var Environment = function() {
      var self = this,
-         configProperties,
+         httpClient,
          commonModel,
          adminModel,
          blogModel,
@@ -51,23 +50,18 @@ Environment = function() {
          appMenu,
          isInvitationOnly,
          theMessage;
-    var path = __dirname+"/../config/config.json";
-    configfile = fs.readFileSync(path);
-        configProperties = JSON.parse(configfile);
-        console.log("CONFIG "+JSON.stringify(configProperties));
-        backsideURL = "http://"+configProperties.backsideHost+":"+configProperties.backsidePort+"/";
-        isInvitationOnly = configProperties.invitationOnly;
-
-
-    console.log("Envirionment starting "+configProperties);
+    console.log("Envirionment starting "+httpClient);
 
     /**
      *
      * @param callback signature err
      */
-    self.init = function(callback) {
+    self.init = function() {
         console.log("Environment initializing");
-        var err;
+        console.log('CONFIG '+JSON.stringify(configProperties));
+        //boot in order of need
+        //configure HttpClient to talk to BacksideServlet
+        httpClient = new Req(configProperties.backsideHost, configProperties.backsidePort, configProperties.backsideProtocol);
         topicDriver = new Tdrvr(this);
         userDriver = new Udrvr(this);
         //have drivers, now app models
@@ -83,7 +77,8 @@ Environment = function() {
         questModel = new Qm(this);
         guildModel = new Gm(this);
         searchModel = new Srch(this);
-        return callback(err);
+        backsideURL = configProperties.backsideProtocol+'://'+configProperties.backsideHost+':'+configProperties.backsidePort+'/';
+        console.log("Environment initialized");
     };
 
     //////////////////////
@@ -138,12 +133,7 @@ Environment = function() {
     };
 
     self.getHttpClient = function() {
-      //Create a fresh client for each user
-      var result = new Req(defaults);
-      //configure HttpClient to talk to BacksideServlet
-      result.init(configProperties.backsideHost, configProperties.backsidePort);
-
-      return result;
+        return httpClient;
     };
 
     self.getTopicDriver = function() {
@@ -201,8 +191,6 @@ Environment = function() {
     self.getConversationModel = function() {
         return conversationModel;
     };
-
-    console.log("FOO ");
 };
 
 module.exports = Environment;
