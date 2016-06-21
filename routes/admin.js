@@ -26,6 +26,8 @@ exports.plugin = function(app, environment) {
         var id = cargo.uName;
         req.session[Constants.USER_EMAIL] = email;
         req.session[Constants.USER_ID] = id;
+        console.log("ADMINROLES "+roles+" "+roles.length);
+        //TODO this is an array, not a string: CHANGEME
         var where = roles.indexOf(Constants.ADMIN_CREDENTIALS);
         if (where > -1) {
             environment.setIsAdmin(true);
