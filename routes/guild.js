@@ -83,14 +83,16 @@ exports.plugin = function(app, environment) {
       }
       if (Array.isArray(credentials)) {
         credentials.push(gid);
+        //console.log("ADDINGLEADER-1 "+credentials+" | "+OWNER_LEADER);
       } else {
         var c = [];
         c.push(credentials);
         c.push(gid);
         credentials = c;
+        //console.log("ADDINGLEADER-2 "+credentials+" | "+OWNER_LEADER);
       }
       user.uRole = credentials; //TODO set back in session?
-      AdminModel.addUserRole(user.uName, guildId, function gA(err, rslt) {
+      AdminModel.addUserRole(user.uName, gid, function gA(err, rslt) {
         console.log("ADDEDLEADER "+err);
         return callback(err);
       });

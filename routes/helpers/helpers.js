@@ -31,11 +31,13 @@ Helpers = function (environment) {
         return res.redirect("/");
     };
 
+    //TODO technically, this is dealing with arrays, not strings--CHANGEME
     self.isAdmin = function (req, res, next) {
         var theUser = req.session[Constants.THE_USER];
         console.log("ADMINUSER "+theUser);
         if (theUser) {
             var roles = theUser.uRole;
+            console.log("ATMINTEST "+roles.length);
             var where = roles.indexOf(Constants.ADMIN_CREDENTIALS);
             console.log("ADMINROLES "+roles+" "+where);
             if (where > -1) {
