@@ -183,6 +183,23 @@ var AdminModel =  module.exports = function(environment) {
         });
     };
 
+    /**
+     * Update a user's roles by comparison of <code>changedRoles</code>
+     * to the user's current roles -- select addRole or removeUserRole
+     * @param userEmail
+     * @param userId
+     * @param changedRoles
+     * @param callback
+     * /
+    self.updateUserRole = function(userEmail, userId, changedRoles, callback) {
+      self.getUser(email, function umgu(err, rslt) {
+        var usr = rslt.cargo,
+            oldRoles = usr.uRole;
+
+      });
+    };
+    */
+
     self.addUserRole = function(userId, newRole, callback) {
         userDriver.addUserRole(userId, newRole, function uaUrr(err, rslt) {
             return callback(err, rslt);
