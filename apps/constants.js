@@ -147,5 +147,6 @@ module.exports.ADMIN_CREDENTIALS        ="rar";
 module.exports.SESSION_TOKEN =          "SessToken";
 module.exports.USER_EMAIL =             "SessUsrEmail";
 module.exports.USER_ID =                "SessUserId";
-module.exports.USER_IS_ADMIN =          "SessUsrAdmin";  //will be "T" or "F"
+module.exports.USER_IS_ADMIN =          "SessUsrAdmin";  //will be true or null
 module.exports.THE_USER  =              "SessionUser";
+module.exports.USER_IS_AUTHENTICATED =  "SessUserAuth"; //will be true or null

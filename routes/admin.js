@@ -12,42 +12,39 @@ exports.plugin = function(app, environment) {
     function finishAuthenticate(req, jsonUser) {
         console.log("AA "+JSON.stringify(jsonUser));
         //\"rToken\":\"f4d3f872-0cae-444c-badf-632de6c5a118\"
-        var rToken = jsonUser.rToken;
-        console.log("BB "+rToken);
-        req.session[Constants.SESSION_TOKEN] = rToken;
         // \"cargo\":{\"uGeoloc\":\"|\",\"uEmail\":\"sam@slow.com\",\"uHomepage\":\"\",
         // \"uName\":\"sam\",\"uFullName\":\"Sam Slow\",\"uRole\":\"rur\",\"uAvatar\":\"\"}}"
-        var cargo = jsonUser.cargo;
+        var rToken = jsonUser.rToken,
+            cargo = jsonUser.cargo;
+        console.log("BB "+rToken);
+        req.session[Constants.SESSION_TOKEN] = rToken;
         // hang on to the whole user object
         req.session[Constants.THE_USER] = cargo;
         console.log("CC "+JSON.stringify(cargo));
-        var email = cargo.uEmail;
-        var roles = cargo.uRole;
-        var id = cargo.uName;
+        var email = cargo.uEmail,
+            roles = cargo.uRole,
+            id = cargo.uName;
         req.session[Constants.USER_EMAIL] = email;
         req.session[Constants.USER_ID] = id;
-        console.log("ADMINROLES "+roles+" "+roles.length);
+        //console.log("ADMINROLES "+roles+" "+roles.length);
         //TODO this is an array, not a string: CHANGEME
         var where = roles.indexOf(Constants.ADMIN_CREDENTIALS);
         if (where > -1) {
-            environment.setIsAdmin(true);
+            //environment.setIsAdmin(true);
             req.session[Constants.USER_IS_ADMIN] = true;
         } else {
-            environment.setIsAdmin(false);
+            //environment.setIsAdmin(false);
             req.session[Constants.USER_IS_ADMIN] = false;
         }
-        environment.setIsAuthenticated(true);
-        environment.setUserEmail(email);
+        req.session[Constants.USER_IS_AUTHENTICATED] = true;
     };
 
     function finishLogout(req) {
-        req.session[Constants.SESSION_TOKEN] = null;
-        req.session[Constants.USER_IS_ADMIN] = "F";
-        req.session[Constants.USER_EMAIL] = null;
-        req.session[Constants.THE_USER] = null;
-        environment.setIsAuthenticated(false);
-        environment.setIsAdmin(false);
-        environment.setUserEmail("");
+      req.session[Constants.SESSION_TOKEN] = null;
+      req.session[Constants.USER_IS_ADMIN] = false;
+      req.session[Constants.USER_EMAIL] = null;
+      req.session[Constants.THE_USER] = null;
+      req.session[Constants.USER_IS_AUTHENTICATED] = false;
     };
     /////////////
     // Routes
@@ -245,10 +242,10 @@ exports.plugin = function(app, environment) {
     app.get("/listusers", helpers.isAdmin, function(req, res) {
         //TODO this needs to do paging
         AdminModel.fillUserDatatable(0, 50, function adminListUsers(err, json) {
-            console.log("AdminModel.listUsers "+json);
+            console.log("AdminModel.listUsers "+JSON.stringify(json.cargo));
             var data = environment.getCoreUIData(req);
             data.usrtable = json.cargo;
-            res.render("listusers",data);
+            res.render("listusers", data);
         });
     });
 

@@ -10,7 +10,7 @@ Helpers = function (environment) {
 
     self.isPrivate = function (req, res, next) {
         if (isPrivatePortal) {
-            if (req.isAuthenticated()) {
+            if (req.session[Constants.USER_IS_AUTHENTICATED]) {
                 return next();
             }
             return res.redirect("/login");
@@ -20,7 +20,7 @@ Helpers = function (environment) {
     };
 
     self.isLoggedIn = function (req, res, next) {
-        if (environment.getIsAuthenticated()) {
+        if (req.session[Constants.USER_IS_AUTHENTICATED]) {
             return next();
         }
         // if they aren't redirect them to the home page
