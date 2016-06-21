@@ -12,24 +12,6 @@ exports.plugin = function(app, environment) {
 
     console.log("Bookmark "+BookmarkModel);
 
-    function isLoggedIn(req, res, next) {
-        if (environment.getIsAuthenticated()) {return next();}
-        // if they aren't redirect them to the home page
-        // really should issue an error message
-        if (isPrivatePortal) {
-            return res.redirect("/login");
-        }
-        return res.redirect("/");
-    };
-
-    function getUser(req) {
-        var result = req.session[Constants.THE_USER];
-        if (!result) {
-            result = {};
-            result.uName = Constants.GUEST_USER;
-        }
-        return result;
-    };
     /////////////
     // Menu
     /////////////

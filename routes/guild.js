@@ -153,7 +153,7 @@ exports.plugin = function(app, environment) {
               var data =  environment.getCoreUIData(req);
               if (rslt.cargo) {
                   data = CommonModel.populateTopic(rslt.cargo, theUser, data);
-                  if (environment.getIsAuthenticated()) {
+                  if (data.isAuthenticated) {
                     var isLeader = userIsLeader(q, theUser);
                     if (isLeader) {
                       canJoin = false;

@@ -7,6 +7,7 @@ var Req = require("./models/drivers/http_request"),
     Blog = require("./models/blog_model"),
     Bm = require("./models/bookmark_model"),
     Common = require("./models/common_model"),
+    Constants = require("./constants"),
     Admin = require("./models/admin_model"),
     Conver = require("./models/conversation_model"),
     Kan = require("./models/kanban_model"),
@@ -48,11 +49,8 @@ Environment = function() {
          backsideURL,
      //view data
          appMenu,
-         isAuthenticated,
-         isAdmin,
          isInvitationOnly,
-         theMessage,
-         userEmail;
+         theMessage;
     var path = __dirname+"/../config/config.json";
     configfile = fs.readFileSync(path);
         configProperties = JSON.parse(configfile);
@@ -103,33 +101,17 @@ Environment = function() {
     self.getApplicationMenu = function() {
         return appMenu;
     };
-    self.setIsAuthenticated = function(truth) {
-        isAuthenticated = truth;
-    };
 
-
-    self.getIsAuthenticated = function() {
-        return isAuthenticated;
-    };
-    self.setIsAdmin = function(truth) {
-        isAdmin = truth;
-    };
-    self.getIsAdmin = function(truth) {
-        return isAdmin;
-    };
     self.setMessage = function(msg) {
         theMessage = msg;
-    };
-    self.setUserEmail = function(email) {
-        userEmail = email;
     };
 
     self.getCoreUIData = function (req) {
         var result = {};
-        result.isAuthenticated = isAuthenticated;
-        result.isAdmin = isAdmin;
+        result.isAuthenticated = req.session[Constants.USER_IS_AUTHENTICATED];
+        result.isAdmin = req.session[Constants.USER_IS_ADMIN];
         result.themessage = theMessage;
-        result.email = userEmail;
+        result.email = req.session[Constants.USER_EMAIL];
         result.appmenu = appMenu;
         result.isInvitationOnly = isInvitationOnly;
         if (req.flash) {
