@@ -239,12 +239,14 @@ CommonModel =  module.exports = function(environment) {
                 // TODO let each app install its own in a map???
                 ////////////////////////////
                 if (piv.documentType === Constants.BLOG_TYPE) {
-                    shell.isBlogType = true;
+                  shell.isBlogType = true;
                 } else if (piv.documentType === Constants.WIKI_TYPE) {
-                    shell.isWikiType = true;
+                  shell.isWikiType = true;
                 } else if (piv.documentType === Constants.BOOKMARK_NODE_TYPE) {
-                    shell.isBookmark = true;
-                } //TODO conversation types?
+                  shell.isBookmark = true;
+                } else if (piv.documentType === Constants.ANNOTATION_NODE_TYPE) {
+                  shell.isAnnotation = true;
+                }//TODO conversation types?
 
                 list.push(shell);
             }
@@ -450,7 +452,7 @@ CommonModel =  module.exports = function(environment) {
 
         });
     };
-    
+
     /**
      * Populate UI data for the topic.hbs template
      * @param jsonTopic
