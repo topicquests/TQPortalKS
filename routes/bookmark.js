@@ -63,7 +63,7 @@ exports.plugin = function(app, environment) {
         console.log("GETBLOG "+q);
         if (q) {
             var userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
-                theUser = getUser(req),
+                theUser = helpers.getUser(req),
                 userIP = "",
                 sToken = req.session[Constants.SESSION_TOKEN];
             CommonModel.fetchTopic(q, userId, userIP, sToken, function bFT(err, rslt) {
