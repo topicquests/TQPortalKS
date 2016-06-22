@@ -61,6 +61,7 @@ module.exports.TAG_NAMES_PROP =         "TagNames";  //takes an array [name, nam
 module.exports.URL_PROP =               "url";
 module.exports.EXTRAS   =               "extras"; // field with a JSONObject with added key/value pairs for newInstance
 //NODE TYPES
+module.exports.ANNOTATION_NODE_TYPE =   "AnnotationType";
 module.exports.BOOKMARK_NODE_TYPE =     "BookmarkNodeType";
 module.exports.CHALLENGE_TYPE =         "ChallengeNodeType";
 module.exports.ISSUE_TYPE =             "IssueNodeType";
@@ -80,9 +81,9 @@ module.exports.POSITION_TYPE =          "PositionNodeType";
 module.exports.CONVERSATION_MAP_TYPE =  "ConversationMapNodeType";
 module.exports.ONTOLOGY_NODE_TYPE =     "OntologyNodeType";
 module.exports.GRAPH_NODE_TYPE =        "GraphNodeType";
-module.exports.BLOG_TYPE				= "BlogNodeType";
-module.exports.WIKI_TYPE                = "WikiNodeType";
-module.exports.MICROBLOG_TYPE			= "MicroblogNodeType";
+module.exports.BLOG_TYPE				=       "BlogNodeType";
+module.exports.WIKI_TYPE              = "WikiNodeType";
+module.exports.MICROBLOG_TYPE			=     "MicroblogNodeType";
 
 //RELATIONS
 module.exports.DOCUMENT_CREATOR_RELN =  "DocumentCreatorRelationType";
