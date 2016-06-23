@@ -171,6 +171,7 @@ exports.plugin = function(app, environment) {
                   if (canJoin) {
                     data.guildId = q;
                   }
+                  data.guildId = q;
               }
               console.log("CANJOIN "+q+" "+canJoin);
               return res.render("guild", data);
@@ -212,6 +213,21 @@ exports.plugin = function(app, environment) {
         data.isNotEdit = true;
         data.action = "/guild/new";
         return res.render("blogwikiform", data);
+    });
+
+    ///////////////////////////////
+    // Guild leader functions
+    ///////////////////////////////
+    app.get("/selectrootnode/:id", function(req, res) {
+      var q = req.params.id;
+      console.log("SELROOT "+q);
+      //TODO
+    });
+
+    app.get("/playmoves/:id", function(req, res) {
+      var q = req.params.id;
+      console.log("PLAY "+q);
+      //TODO
     });
 
     var _guildsupport = function (body, user, userIP, sToken, callback) {
