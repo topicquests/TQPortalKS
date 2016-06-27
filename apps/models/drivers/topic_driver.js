@@ -115,6 +115,21 @@ TopicDriver =  module.exports = function(environment) {
         });
     };
 
+    self.listAllBlogPosts = function(start, count, userId, userIP, sToken, callback) {
+      var urx = '/tm/',
+          verb = Constants.LIST_ALL_BLOG_POSTS,
+          query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+      query.from = start.toString();
+      query.count = count.toString();
+      httpClient.get(urx, query, function tdLab(err, rslt) {
+          return callback(err, rslt);
+      });
+    };
+
+    self.listBlogPostsByUser = function(start, count, userId, userIP, sToken, callback) {
+      //TODO
+    };
+
     self.listInstanceTopics = function(typeLocator, start, count, userId, userIP, sToken, callback) {
         var urx = '/tm/',
             verb = Constants.LIST_INSTANCE_TOPICS,
@@ -128,7 +143,15 @@ TopicDriver =  module.exports = function(environment) {
     };
 
     self.listSubclassTopics = function(superClassLocator, start, count, userId, userIP, sToken) {
-        //TODO
+      var urx = '/tm/',
+          verb = Constants.LIST_SUBCLASS_TOPICS,
+          query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+      query.from = start.toString();
+      query.count = count.toString();
+      query.inOf = typeLocator;
+      httpClient.get(urx, query, function tdLUT(err, rslt) {
+          return callback(err, rslt);
+      });
     };
 
     /**

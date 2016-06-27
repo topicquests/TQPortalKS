@@ -27,7 +27,8 @@ BlogModel =  module.exports = function(environment) {
     self.fillDatatable = function(start, count, userId, userIP, sToken, callback) {
       console.log("BlogModel.fillDatatable "+userId);
       //TODO we need to sort posts on date, descending
-      topicDriver.listInstanceTopics(Constants.BLOG_TYPE, start, count, userId,
+      topicDriver.listAllBlogPosts(start, count, userId,
+      //topicDriver.listInstanceTopics(Constants.BLOG_TYPE, start, count, userId,
           userIP, sToken, function bmF(err, rslt) {
         console.log("LISTBLOGS "+err+" | "+JSON.stringify(rslt));
         return callback(err, rslt, 0, 0);
