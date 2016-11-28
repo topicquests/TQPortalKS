@@ -1,7 +1,10 @@
 <div class="col-xs-4 col-sm-4">
     {{#if showTags}}
-        <h3>Tags</h3>
         <div class="taglist pre-scrollable">
+          <h3>Tags</h3>
+          {{#if isAuthenticated}}
+          <p><img src="/images/newbutton_sm.png"><a href="/tagnew/{{locator}}"><b>Add Tags</b></a></p>
+          {{/if}}
             {{#each tags}}
                 <a href="/tag/{{lox}}"><img src="{{sIco}}"> {{label}}</a><br/>
             {{/each}}

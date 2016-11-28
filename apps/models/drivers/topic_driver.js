@@ -102,6 +102,23 @@ TopicDriver =  module.exports = function(environment) {
         });
     };
 
+    self.transclude = function(parentLocator, childLocator, contextLocator,
+                               language, userId, userIP, sToken, callback) {
+     var urx = '/tm/',
+         verb = Constants.TRANSCLUDE,
+         query = queryUtil.getCoreQuery(verb, userId, userIP, sToken),
+         cargo = {};
+     cargo.parent = parentLocator;
+     cargo.child = childLocator;
+     cargo.context = contextLocator;
+     cargo.Lang = language;
+     query.cargo = cargo;
+     console.log("TRANSCLUDE "+JSON.stringify(query));
+     httpClient.post(urx, query, function tdSNIT(err, rslt) {
+         return callback(err, rslt);
+     });
+    };
+
     self.listUserTopics = function(start, count, userId, userIP, sToken, callback) {
         var urx = '/tm/',
             verb = Constants.LIST_USERS,
@@ -126,9 +143,9 @@ TopicDriver =  module.exports = function(environment) {
       });
     };
 
-    self.listBlogPostsByUser = function(start, count, userId, userIP, sToken, callback) {
+//    self.listBlogPostsByUser = function(start, count, userId, userIP, sToken, callback) {
       //TODO
-    };
+//    };
 
     self.listInstanceTopics = function(typeLocator, start, count, userId, userIP, sToken, callback) {
         var urx = '/tm/',
@@ -156,22 +173,66 @@ TopicDriver =  module.exports = function(environment) {
 
     /**
      * Given a conversation <code>rootNodeLocator</code>, fetch all the
-     * child nodes of this root node, recursively. Returned as a
-     * JSON map {locator:node}
+     * child nodes of this root node, (NOT recursive). Returned as a
+     * JSON map {locator1:node,locator1:node...}, where <code>locator</code> is
+     * <code>rootNodeLocator</code>
      * @param rootNodeLocator
      * @param userId
      * @param userIP
      * @param sToken
+     * @param callback
+     * NOTE: does not appear we use this API anywhere
      */
-    self.listTreeChildNodesJSON = function(rootNodeLocator, userId, userIP, sToken) {
+    self.listTreeChildNodesJSON = function(rootNodeLocator, contextLocator,
+          userId, userIP, sToken, callback) {
         var urx = '/tm/',
             verb = Constants.LIST_TREE_CHILD_NODES,
             query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
         query.lox = locator;
+        query.ContextLocator = contextLocator;
         httpClient.get(urx, query, function tdLUT(err, rslt) {
             return callback(err, rslt);
         });
     };
+
+    /**
+     * Collects a JSONObject starting from the proxy identified by
+     * <code>rootLocator</code>, which has this structure:<br/>
+     * { root: <the entire proxy itself>, kids: [ struct, struct, ...]}
+     * where <em>struct</em> is the same structure.
+     * @param rootLocator
+     * @param contextLocator -- if <code>null</code> returns all child nodes
+     * @param userId
+     * @param userIP
+     * @param sToken
+     * @param callback
+     */
+    self.collectParentChildTree = function(rootLocator, contextLocator,
+          userId, userIP, sToken, callback) {
+      var urx = '/tm/',
+          verb = Constants.COLLECT_CONVERSATION_TREE,
+          query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+      query.lox = rootLocator;
+      query.ContextLocator = contextLocator;
+      console.log("COLLECTINGXXX "+JSON.stringify(query));
+      httpClient.get(urx, query, function tdLUT(err, rslt) {
+        //console.log("COLLECTING+ "+err+" "+rslt);
+        return callback(err, rslt);
+      });
+    };
+
+    self.connectTwoTopics = function(jsonCargo, userId, userIP, sToken, callback) {
+      console.log("ConnectTwoTopics "+jsonCargo+" "+userId+" "+userIP+" "+sToken);
+      var urx = '/tm/',
+          verb = Constants.ADD_RELATION,
+          query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+      query.cargo = jsonCargo;
+      console.log("ConnectTwoTopics+ "+JSON.stringify(query));
+      httpClient.post(urx, query, function tdSNIT(err, rslt) {
+          return callback(err, rslt);
+      });
+    };
+
 
     self.submitNewInstanceTopic = function(jsonTopic, userId, userIP, sToken, callback) {
         console.log("SubmitNewInstanceTopic "+jsonTopic+" "+userId+" "+userIP+" "+sToken);
@@ -185,7 +246,7 @@ TopicDriver =  module.exports = function(environment) {
             return callback(err, rslt);
         });
     };
-
+/* not ready to use this
     self.submitNewSubclassTopic = function(jsonTopic, userId, userIP, sToken, callback) {
         console.log("SubmitNewSubclassTopic "+jsonTopic+" "+userId+" "+userIP+" "+sToken);
         var urx = '/tm/',
@@ -197,7 +258,7 @@ TopicDriver =  module.exports = function(environment) {
             return callback(err, rslt);
         });
     };
-
+*/
     /**
      * Ask Backside to create a new ConversationMapNode
      * @param jsonCargo must conform to cargo requirement of backside servlet
@@ -217,6 +278,30 @@ TopicDriver =  module.exports = function(environment) {
         });
     };
 
+    /**
+     * Update a full topic
+     */
+    self.updateTopic = function(jsonCargo, userId, userIP, sToken, callback) {
+        var urx = '/tm/',
+            verb = Constants.UPDATE_TOPIC,
+            query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+        query.cargo = jsonCargo;
+        console.log("UpdateTopic+ "+JSON.stringify(query));
+        httpClient.post(urx, query, function tdSNIT(err, rslt) {
+            return callback(err, rslt);
+        });
+    };
+
+    self.updateTopicTextFields = function(jsonCargo, userId, userIP, sToken, callback) {
+        var urx = '/tm/',
+            verb = Constants.UPDATE_TOPIC_TEXT_FIELDS,
+            query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+        query.cargo = jsonCargo;
+        console.log("UpdateTopicTextFields+ "+JSON.stringify(query));
+        httpClient.post(urx, query, function tdSNIT(err, rslt) {
+            return callback(err, rslt);
+        });
+    };
     ///////////////////////////////////////////////
     // Below, we have app-specific index fetches
     // We use the concept of "localVerb" because the generalized

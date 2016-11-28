@@ -27,11 +27,16 @@ BlogModel =  module.exports = function(environment) {
     self.fillDatatable = function(start, count, userId, userIP, sToken, callback) {
       console.log("BlogModel.fillDatatable "+userId);
       //TODO we need to sort posts on date, descending
-      topicDriver.listAllBlogPosts(start, count, userId,
+      topicDriver.listInstanceTopics(Constants.BLOG_TYPE, start, count, userId,
       //topicDriver.listInstanceTopics(Constants.BLOG_TYPE, start, count, userId,
           userIP, sToken, function bmF(err, rslt) {
         console.log("LISTBLOGS "+err+" | "+JSON.stringify(rslt));
-        return callback(err, rslt, 0, 0);
+        var count = 0,
+            d = rslt.cargo;
+        if (d) {
+          count = d.length;
+        }
+        return callback(err, rslt, count, 0);
       });
       //LISTBLOGS undefined | {"rMsg":"ok","rToken":"","cargo":[{"crDt":"2015-12-27T14:50:24-08:00",
       // "trCl":["TypeType","ClassType","NodeType","BlogNodeType"],"lox":"8ff7356a-f35a-45d9-9660-fe04787a6de5",
@@ -55,12 +60,28 @@ BlogModel =  module.exports = function(environment) {
       if (!lang) { lang = "en";}
       CommonModel.createTopicInstance(null, Constants.BLOG_TYPE, userId,
           json.title, json.body, lang, Constants.PUBLICATION, Constants.PUBLICATION_SM,
-          false, null, pivots, userIP, sToken, function umC(err, rslt) {
+          false, null, pivots, userIP, sToken, function bmC(err, rslt) {
         return callback(err, rslt);
       });
     };
 
+//////////////////////////
+// Updating a topic is somewhat complex:
+//  We are possibly updating a label or a details field.
+//  Some topics may have many labels; issue becomes which one
+//  Some topics may have many detais; issue becomes which one
+//  Overriding issue is *language*
+//  What we get here is a simple set of updated fields (label and details)
+//  We are forced to fetch the topic and perform surgery, then send the full
+//  Topic back to BacksideServlet.
+//  A simple way forward is to add a feature to BacksideServlet which simply
+//  tells it to updateTextFields
+/////////////////////////
     self.update = function(json, userId, userIP, sToken, callback) {
-        //TODO
+      console.log("BLOG_MODEL_UPDATE_POST "+JSON.stringify(json)+" | "+JSON.stringify(userId));
+
+      CommonModel.updateTopicTextFields(json, userId, userIP, sToken, function bmU(err, rslt) {
+        return callback(err, rslt);
+      });
     };
 };

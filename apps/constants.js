@@ -4,14 +4,14 @@
 ///////////////////////////
 // language defaults
 ///////////////////////////
-module.exports.ENGLISH		    = "en";
+module.exports.ENGLISH		    =       "en";
 ///////////////////////////
 // backside stuff
 ///////////////////////////
-module.exports.SYSTEM_USER	    = "SystemUser";
-module.exports.GUEST_USER       = "GuestUser";
-module.exports.MAX_HIT_COUNT    = 30;
-module.exports.TOPICS_INDEX		= "topics";
+module.exports.SYSTEM_USER	    =     "SystemUser";
+module.exports.GUEST_USER       =     "GuestUser";
+module.exports.MAX_HIT_COUNT    =      30;
+module.exports.TOPICS_INDEX		=        "topics";
 
 //VERBS
 module.exports.ADD_FEATURES_TO_TOPIC =  "AddFeatures"; //topicmap
@@ -19,6 +19,9 @@ module.exports.ADD_FEATURES_TO_TOPIC =  "AddFeatures"; //topicmap
 //TODO add more features to BacksideServlet for that
 module.exports.GET_TOPIC =              "GetTopic"; //topicmap
 module.exports.PUT_TOPIC =              "PutTopic"; //topicmap
+module.exports.UPDATE_TOPIC			=       "UpdateTopic"; //topicmap
+module.exports.ADD_RELATION			=       "AddRelation";
+module.exports.UPDATE_TOPIC_TEXT_FIELDS= "UpdateTextFields"; //topicmap
 module.exports.REMOVE_TOPIC =           "RemTopic"; //topicmap
 module.exports.NEW_INSTANCE_TOPIC =     "NewInstance"; //topicmap
 module.exports.NEW_SUBCLASS_TOPIC =     "NewSub"; //topicmap
@@ -47,8 +50,16 @@ module.exports.LOGOUT =                 "LogOut";
 module.exports.FIND_OR_PROCESS_TAG =    "FindProcessTag";
 module.exports.FIND_OR_CREATE_BOOKMARK= "FindProcessBookmark";
 module.exports.LIST_TREE_CHILD_NODES	= "ListTreeNodes";
+module.exports.COLLECT_CONVERSATION_TREE	= "ColConTree";
 module.exports.LIST_ALL_BLOG_POSTS		= "ListAllBlogs";
 module.exports.LIST_BLOGS_BY_USER		=   "ListUserBlogs";
+module.exports.TRANSCLUDE   =           "Transclude";
+//RPG VERBS
+module.exports.ADD_LEADER			=         "AddLeader";
+module.exports.REMOVE_LEADER		=       "RemoveLeader";
+module.exports.ADD_MEMBER			=         "AddMember";
+module.exports.REMOVE_MEMBER		=       "RemoveMember";
+
 //NODE PROPERTIES
 module.exports.CREATORID_PROP =         "crtr";
 module.exports.DETAILS_PROP =           "details";
@@ -63,6 +74,11 @@ module.exports.SUBCLASS_OF_PROP =       "sbOf";
 module.exports.TAG_NAMES_PROP =         "TagNames";  //takes an array [name, name, name]
 module.exports.URL_PROP =               "url";
 module.exports.EXTRAS   =               "extras"; // field with a JSONObject with added key/value pairs for newInstance
+//CARGO PROPERTIES
+module.exports.REL_SRC_LOCATOR				= "RelSrcLoc",
+module.exports.REL_TRG_LOCATOR				= "RelTrgLoc",
+module.exports.REL_TYPE_LOCATOR				= "RelTypLoc",
+
 //NODE TYPES
 module.exports.ANNOTATION_NODE_TYPE =   "AnnotationType";
 module.exports.BOOKMARK_NODE_TYPE =     "BookmarkNodeType";

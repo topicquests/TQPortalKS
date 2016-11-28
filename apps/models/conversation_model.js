@@ -60,6 +60,23 @@ ConversationModel =  module.exports = function(environment) {
     };
 
     self.update = function(json, userId, userIP, sToken, callback) {
-        //TODO
+      console.log("CONV_MODEL_UPDATE_POST "+JSON.stringify(json)+" | "+sToken);
+      CommonModel.updateTopicTextFields(json, userId, userIP, sToken, function bmU(err, rslt) {
+        return callback(err, rslt);
+      });
     };
+
+    self.transclude = function(json, isEvidence,
+          userId, userIP, sToken, callback) {
+      var parent = json.locator,
+          child = json.transcludelocator,
+          context = json.contextLocator,
+          language = json.language;
+      topicDriver.transclude(parent, child, context, language, userId, userIP,
+          sToken, function cmT(err, rslt) {
+        return callback(err, rslt);
+      });
+    };
+
+
 };

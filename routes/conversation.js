@@ -56,10 +56,73 @@ exports.plugin = function(app, environment) {
         });
     });
 
+    app.get("/convnext/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("ConvNext: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      ConversationModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Conv.index "+countsent+" "+data);
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("conversationindex", json);
+      });
+    });
+    app.get("/convprev/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("ConvPrev: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      ConversationModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Conv.index "+countsent+" "+data);
+
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("conversationindex", json);
+      });
+    });
+
     app.get("/conversation/:id", helpers.isPrivate, function(req, res) {
         var q = req.params.id,
             contextLocator = req.query.contextLocator;
-        console.log("GETCON "+q);
+        if (!contextLocator) {
+          contextLocator = q;
+        }
+        console.log("GETCONx "+q+" "+contextLocator);
         if (q) {
             var userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
                 userIP = "",
@@ -71,20 +134,40 @@ exports.plugin = function(app, environment) {
 // ConversationWidget is spliced in -- or all this code is replaced
 ///////////////////////////////
             CommonModel.fetchTopic(q, userId, userIP, sToken, function bFT(err, rslt) {
-                var data =  environment.getCoreUIData(req);
+                var data =  environment.getCoreUIData(req),
+                    language = "en"; // TODO
+                data.language = language;
                 if (rslt.cargo) {
-                  //  //TODO populateConversationTopic
-                  //  data = CommonModel.populateTopic(rslt.cargo, theUser, data);
-                  CommonModel.populateConversationTopic(rslt.cargo, theUser, "/topic/", userIP, sToken,
-                              data, function bC(err, rslt) {
-                      data = rslt;
-                      console.log("BOOBOOBOO "+JSON.stringify(data));
+                  CommonModel.populateConversationTopic(rslt.cargo, contextLocator, theUser, "/conversation/", userIP, sToken,
+                          data, function bC(err, rslt) {
+                  data = rslt;
+                  console.log("BOOBOOBOO "+JSON.stringify(data));
+                  helpers.checkContext(req, data);
+                  helpers.checkTranscludes(req, data);
+                  //data for response buttons
+                  data.locator = q;
+                  if (contextLocator && contextLocator !== "") {
+                      data.context = contextLocator;
+                  } else {
+                      data.context = q; // we are talking about responding to this blog
+                  }
+                  // deal with editing
+                  var canEdit = false;
+                  console.log("CANEDIT "+userId+" | "+data.userid+" | "+data.isAdmin);
+                  if (helpers.isLoggedIn) {
+                    if (userId === data.userid || data.isAdmin) {
+                      canEdit = true;
+                    }
+                  }
+                  data.canEdit = canEdit;
+                  data.editurl = "/conversationedit/"+q;
+                  return res.render("ctopic", data);
                   });
+                } else {
+                  req.flash("error", "Cannot get "+q);
+                  res.redirect("/");
                 }
-                helpers.checkContext(req, data);
-                helpers.checkTranscludes(req, data);
 
-                return res.render("ctopic", data);
             });
         } else {
           console.log("FOOIE "+q);
@@ -114,33 +197,71 @@ exports.plugin = function(app, environment) {
      * Capture <code>id</code> and save to Session for later transclusion
      */
     app.get("/remember/:id", helpers.isLoggedIn, function(req, res) {
-        var q = req.params.id;
+        var q = req.params.id,
+            contextLocator = req.query.contextLocator;
         req.session.transclude = q;
-        req.flash("error", "Transclusion remembered");
+        req.session.context = contextLocator;
+        //save it to session
+        req.flash("error", "Topic remembered");
         return res.redirect("/");
     });
 
     /**
      * Transclude a remembered topic
      */
-    app.get("/transclude/:id", helpers.isLoggedIn, function(req, res) {
-        var q = req.params.id;
-        console.log("TRANSCLUDING "+q);
-        return res.redirect("/");
+    app.post("/transclude/", helpers.isLoggedIn, function(req, res) {
+        var body = req.body,
+            //contextLocator = req.query.contextLocator,
+            userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+            userIP = "",
+            sToken = req.session[Constants.SESSION_TOKEN];
+        //body.contextLocator = contextLocator;
+        console.log("TRANSCLUDING "+JSON.stringify(body));
+        //TRANSCLUDING 4936540b-693c-44a1-a3db-ea439df0eb5b | 4936540b-693c-44a1-a3db-ea439df0eb5b
+        if (body.contextLocator !== "" && body.transcludelocator !== "") {
+          ConversationModel.transclude(body, false, userId, userIP, sToken, function ctT(err, rslt) {
+            req.session.transclude = null;
+            req.query.contextLocator = null;
+            return res.redirect("/topic/"+body.locator);
+          });
+        } else {
+          //That's not good!
+          req.flash("error", "Missing Transclude Identity");
+          res.redirect("/");
+        }
+
     });
+
     app.get("/transcludeevidence/:id", helpers.isLoggedIn, function(req, res) {
-        var q = req.params.id;
-        console.log("TRANSCLUDINGEVIDENCE "+q);
-        return res.redirect("/");
+        var body = req.body,
+            //contextLocator = req.query.contextLocator,
+            userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+            userIP = "",
+            sToken = req.session[Constants.SESSION_TOKEN];
+        //body.contextLocator = contextLocator;
+        if (body.contextLocator !== "" && body.transcludelocator !== "") {
+            ConversationModel.transclude(body, t, true, userId, userIP, sToken, function ctT(err, rslt) {
+              req.session.transcludeevidence = null;
+              req.query.contextLocator = null;
+              return res.redirect("/topic/"+body.locator);
+            });
+        } else {
+          //That's not good!
+          req.flash("error", "Missing Transclude Identity");
+          res.redirect("/");
+        }
     });
+
 
     /**
      * Capture <code>id</code> and save to Session for later transclusion as evidence
      */
     app.get("/rememberevidence/:id", helpers.isLoggedIn, function(req, res) {
-        var q = req.params.id;
+        var q = req.params.id,
+            contextLocator = req.query.contextLocator;
         req.session.tevidence = q;
-        req.flash("error", "Transcled evidence remembered");
+        req.session.context = contextLocator;
+        req.flash("error", "Topic remembered as evidence");
         return res.redirect("/");
     });
 
@@ -234,8 +355,35 @@ exports.plugin = function(app, environment) {
         //TPDP
     });
 
-    app.get("/conversationedit", helpers.isLoggedIn, function(req, res) {
-        //TODO
+    app.get("/conversationedit/:id", helpers.isLoggedIn, function(req, res) {
+      var q = req.params.id,
+          contextLocator = req.query.contextLocator,
+          language = "en"; //TODO we need to deal with language
+      console.log("ConversationEdit "+q+" "+contextLocator);
+      if (q) {
+          var userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+              theUser = helpers.getUser(req),
+              userIP = "",
+              sToken = req.session[Constants.SESSION_TOKEN];
+          CommonModel.fetchTopic(q, userId, userIP, sToken, function bFT(err, rslt) {
+              var data =  environment.getCoreUIData(req);
+              if (rslt.cargo) {
+                console.log("CARGO "+JSON.stringify(rslt.cargo));
+                data.action = "/conversation/edit";
+                data.formtitle = "Edit Conversation Node";
+                data.locator = q; // this makes the form know it's for editing
+                data.title = "Title editing is disabled"; //rslt.cargo.label;
+                data.language = language;
+                data.body = rslt.cargo.details;
+                //TODO
+                return res.render("blogwikiform", data);
+              }
+          });
+        } else {
+            //That's not good!
+            req.flash("error", "Cannot get "+q);
+            res.redirect("/");
+        }
     });
 
     /**
@@ -263,15 +411,21 @@ exports.plugin = function(app, environment) {
             sToken = req.session[Constants.SESSION_TOKEN],
             isPrivate = false; //TODO
         console.log("CONVERSATION_NEW_POST "+JSON.stringify(body));
-        _consupport(body, isPrivate, userId, userIP, sToken, function cP(err,result) {
+        _consupport(body, isPrivate, userId, userIP, sToken, function cP(err, result) {
             console.log("CONVERSATION_NEW_POST-1 "+err+" "+result);
-            //technically, this should return to "/" since Lucene is not ready to display
-            // the new post; you have to refresh the page in any case
             return res.redirect("/conversation");
         });
     });
 
     app.post("/conversation/edit", helpers.isLoggedIn, function(req, res) {
-        //TODO
+      var body = req.body,
+          userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+          userIP = "",
+          sToken = req.session[Constants.SESSION_TOKEN];
+      console.log("ConvEditPost "+JSON.stringify(body));
+      _consupport(body, false, userId, userIP, sToken, function ceP(err, result) {
+         console.log("CONV_EDIT_POST-2 "+err+" "+result);
+         return res.redirect("/conversation");
+     });
     });
 };

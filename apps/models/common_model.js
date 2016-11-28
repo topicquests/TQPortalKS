@@ -2,13 +2,15 @@
  * Created by park on 11/16/2015.
  */
 var Constants = require('../constants'),
-    Mc = require('../widgets/millercolumn'),
+    Sb = require("../stringbuilder"),
+    Jt = require("../widgets/simpletree"),
     CommonModel;
 
 CommonModel =  module.exports = function(environment) {
     var self = this,
         topicDriver = environment.getTopicDriver(),
-        MillerColumn = new Mc(environment),
+        //MillerColumn = new Mc(environment),
+        JTree = new Jt(environment),
         undefined; // leave empty
 
     /**
@@ -29,7 +31,7 @@ CommonModel =  module.exports = function(environment) {
         if (null !== locator && '' !== locator) {
             result.lox = locator;
         }
-        result.uName = userId;
+        result.uId = userId;
         if (null !== language) {
             result.Lang = language;
         } else {
@@ -87,23 +89,6 @@ CommonModel =  module.exports = function(environment) {
     // "sIco":"/images/publication_sm.png","isPrv":"F","inOf":"BlogNodeType"}
 
     /**
-     *
-     * @param typeLocator
-     * @param parentLocator can be <code>null</code>
-     * @param userId
-     * @param label
-     * @param details
-     * @param language
-     * @param largeImagePath
-     * @param smallImagePath
-     * @param isPrivate
-     * @return
-     */
-    function createNewConversationNode(typeLocator, parentLocator, userId, label,
-          details, language, largeImagePath, smallImagePath,isPrivate) {
-       //TODO
-    };
-    /**
      * If <code>jsonPivots</code> contains any tags, process them
      * @param topicLocator
      * @param jsonPivots
@@ -119,25 +104,27 @@ CommonModel =  module.exports = function(environment) {
         var tags = [],
             tg,
             bf = false;
-        tg = jsonPivots.tag1;
-        if (tg && tg !== '') {
-            tags.push(tg);
-            bf = true;
-        }
-        tg = jsonPivots.tag2;
-        if (tg && tg !== '') {
-            tags.push(tg);
-            bf = true;
-        }
-        tg = jsonPivots.tag3;
-        if (tg && tg !== '') {
-            tags.push(tg);
-            bf = true;
-        }
-        tg = jsonPivots.tag4;
-        if (tg && tg !== '') {
-            tags.push(tg);
-            bf = true;
+        if (jsonPivots !== null) {
+          tg = jsonPivots.tag1;
+          if (tg && tg !== '') {
+              tags.push(tg);
+              bf = true;
+          }
+          tg = jsonPivots.tag2;
+          if (tg && tg !== '') {
+              tags.push(tg);
+              bf = true;
+          }
+          tg = jsonPivots.tag3;
+          if (tg && tg !== '') {
+              tags.push(tg);
+              bf = true;
+          }
+          tg = jsonPivots.tag4;
+          if (tg && tg !== '') {
+              tags.push(tg);
+              bf = true;
+          }
         }
         console.log('ProcessTagPivots+ '+JSON.stringify(tags));
         if (bf) {
@@ -289,18 +276,43 @@ CommonModel =  module.exports = function(environment) {
         // "lIco":"/images/publication.png","inOf":"BlogNodeType"}}
     };
 
+
+    /**
+     * Collects a JSONObject starting from the proxy identified by
+     * <code>rootLocator</code>, which has this structure:<br/>
+     * { root: <the entire proxy itself>, kids: [ struct, struct, ...]}
+     * where <em>struct</em> is the same structure.
+     * @param rootLocator
+     * @param contextLocator -- if <code>null</code> returns all child nodes
+     * @param userId
+     * @param userIP
+     * @param sToken
+     * @param callback
+     */
+    self.collectParentChildTree = function(rootLocator, contextLocator,
+          userId, userIP, sToken, callback) {
+      topicDriver.collectParentChildTree(rootLocator, contextLocator,
+          userId, userIp, sToken, function cCP(err, result) {
+        return callback(err, result);
+      });
+    };
     /**
      * Pluck tags out of a JSON ball:
      * {"locator":"","title":"My First Official Blog Post","body":" Yup","tag1":"","tag2":"","tag3":"","tag4":""}
      * @param jsonBall
-     * @returns {{}}
+     * @returns {values}
      */
     self.jsonBallToPivots = function(jsonBall) {
         var result = {};
-        result.tag1 = jsonBall.tag1;
-        result.tag2 = jsonBall.tag2;
-        result.tag3 = jsonBall.tag3;
-        result.tag4 = jsonBall.tag4;
+        if (jsonBall.tag1) {
+          result.tag1 = jsonBall.tag1;
+        } if (jsonBall.tag2) {
+          result.tag2 = jsonBall.tag2;
+        } if (jsonBall.tag3) {
+          result.tag3 = jsonBall.tag3;
+        } if (jsonBall.tag4) {
+          result.tag4 = jsonBall.tag4;
+        }
         return result;
     };
 
@@ -336,6 +348,19 @@ CommonModel =  module.exports = function(environment) {
         topicMapEnvironment.logDebug("CommonModel.canEdit "+JSON.stringify(credentials)+" | "+node.getCreatorId()+" | "+result);
         return result;
     };
+
+    self.updateTopic = function(json, userId, userIP, sToken, callback) {
+      topicDriver.updateTopic(json, userId, userIP, sToken, function cmUt(err, rslt) {
+        return callback(err, rslt);
+      });
+    };
+
+    self.updateTopicTextFields = function(json, userId, userIP, sToken, callback) {
+      topicDriver.updateTopicTextFields(json, userId, userIP, sToken, function cmUt(err, rslt) {
+        return callback(err, rslt);
+      });
+    };
+
     /**
      * This creates a new topic with or without pivots
      * @param locator can be <code>null</code> or ""
@@ -367,9 +392,10 @@ CommonModel =  module.exports = function(environment) {
             jsonT.extras = extras;
         }
 
-        console.log("here "+JSON.stringify(jsonPivots));
+        //console.log("here "+JSON.stringify(jsonPivots));
         //here {"tag1":"First Tag","tag2":"","tag3":"","tag4":""}
         topicDriver.submitNewInstanceTopic(jsonT, userId, userIP, sToken, function cmCT(err, rslt) {
+          console.log("WHYNOTHERE "+JSON.stringify(rslt));
             var x = rslt.cargo;
             var lox = x.lox;
             //deal with pivots
@@ -430,7 +456,7 @@ CommonModel =  module.exports = function(environment) {
     self.createConversationNode = function(typeLocator, parentLocator, contextLocator,
           userId, label, details, language, url, largeImagePath, smallImagePath,
           isPrivate, jsonPivots, userIP, sToken, callback) {
-        console.log("C_MCreateConNode "+typeLocator+" | "+largeImagePath+" | "+smallImagePath);
+        console.log("C_MCreateConNode "+typeLocator+" | "+parentLocator+" | "+largeImagePath+" | "+smallImagePath);
         var jsonT = createNewInstanceTopic(null, typeLocator, userId, label, details, language,
             largeImagePath, smallImagePath, isPrivate);
         if (url !== null && url !== "") {
@@ -441,6 +467,7 @@ CommonModel =  module.exports = function(environment) {
           jsonT.ConParentLocator = parentLocator;
         }
         topicDriver.submitNewConversationNode(jsonT, userId, userIP, sToken, function cmCT(err, rslt) {
+          console.log("FOFOFO "+JSON.stringify(rslt));
             var x = rslt.cargo;
             var lox = x.lox;
             //deal with pivots
@@ -449,7 +476,6 @@ CommonModel =  module.exports = function(environment) {
             processTagPivots(lox, jsonPivots, language, userId, userIP, sToken, function cmCTP(erx, rslx) {
                 return callback(err + erx, x);
             });
-
         });
     };
 
@@ -477,10 +503,16 @@ CommonModel =  module.exports = function(environment) {
             result.date = jsonTopic.lEdDt;
         }
         var pivots = jsonTopic.pvL;
+        //Allow authenticated users to add tags
+        // to any topic except tags or users
+        if (jsonTopic.inOf !== "TagNodeType" &&
+            jsonTopic.inOf !== "UserType") {
+          result.showTags = true;
+        }
         if (pivots) {
             var piv = extractTagPivots(pivots);
             if (piv) {
-                result.showTags = true;
+
                 result.tags = piv;
             }
             piv = extractUserPivots(pivots);
@@ -499,25 +531,103 @@ CommonModel =  module.exports = function(environment) {
                 result.transcludes = piv;
             }
         }
+        var connections = jsonTopic.tpL;
+//[{"relationType":"ImpliesRelationType",
+//"relationLocator":"8b5aad96-4eaa-4410-ac14-1557caf4ee6bImpliesRelationType3deac556-23a7-4cff-8c11-a35e9d29b398",
+//"relationLabel":"ImpliesRelationType",
+//"documentLocator":"8b5aad96-4eaa-4410-ac14-1557caf4ee6b",
+//"documentLabel":"Yet another conversation",
+//"documentType":"WikiNodeType",
+//"sORt":"s",  <-- says this document is the "source" in the relation
+//"documentSmallIcon":"/images/publication_sm.png"}]
+        if (connections) {
+          result.connections = connections;
+        }
         //TODO lots more
         // e.g. conversation trees and relations
         return result;
     };
 
+    function populateFromParent(parent, kids, buf) {
+      if (parent.locator) {
+        buf.append("<ul><li>");
+        buf.append("P: <a href='/topic/"+parent.locator+"'><img src='"+parent.smallImagePath+"'>"+parent.subject+"</a>");
+      }
+      if (kids) {
+        //kids are surrounded in <ul></ul> blocks
+        buf.append("<ul>");
+        var context = parent.contextLocator,
+            len = kids.length,
+            kid;
+        for (var i=0; i<len; i++) {
+          kid = kids[i];
+          if (!context || kid.contextLocator === context) {
+            // a kid is just its own line -- we are not recursing on children here
+            buf.append("<li>C: <a href='/topic/"+kid.locator+"'><img src='"+kid.smallImagePath+"'>"+kid.subject+"</a></li>");
+          }
+        }
+        buf.append("</ul>");
+      }
+      if (parent.locator) {
+        // close out the parent's line
+        buf.append("</li></ul>");
+        //buf.append("</ul>");
+      }
+
+    }
+
+    function populateFromParents(jsonTopic, parents, buf) {
+      var len = parents.length,
+          kids = jsonTopic.cNL, // could be empty or null
+          parent;
+      for (var i=0; i<len; i++) { //for each parent
+        parent = parents[i];
+        populateFromParent(parent, kids, buf);
+      }
+    }
+    /**
+     * Populate a node's immediate neighborhood as HTML
+     * @param jsonTopic
+     * @return HTML string
+     */
+    function populateNeighborhood(jsonTopic) {
+      var buf = new Sb(),
+          parents = jsonTopic.pNL,
+          kids = jsonTopic.cNL;
+      if (!parents) {
+        if (!kids) {
+          buf.append("<h4>No neighborhood</h4>");
+        } else {
+          populateFromParent(jsonTopic, kids, buf);
+        }
+      } else {
+        populateFromParents(jsonTopic, parents, buf);
+      }
+      //console.log("HOOD "+buf.toString());
+      return buf.toString();
+    };
+
+    self.populateQuestTree = function(rootLocator, contextLocator, userId, userIP, sToken, callback) {
+      JTree.makeTree(true, rootLocator, contextLocator, userId, userIP,
+          sToken, function cmPQT(err, rx) {
+        console.log("XYZZZ"+JSON.stringify(rx));
+        return callback(undefined, rx);
+      });
+    };
     /**
      * Populate UI data for the ctopic.hbs template
      * @param jsonTopic
+     * @param contextLocator
      * @param user\
      * @param app e.g. 'blog'
      * @param data core UI data
      * @callback signature (err, rslt)
      */
-    self.populateConversationTopic = function(jsonTopic, user, app, userIP,
+    self.populateConversationTopic = function(jsonTopic, contextLocator, user, app, userIP,
           sToken, data, callback) {
       console.log("POPCONTOPIC- "+JSON.stringify(jsonTopic));
         var myResult = self.populateTopic(jsonTopic, user, data);
         console.log('POPCONTOPIC '+JSON.stringify(myResult));
-        var contextLocator = jsonTopic.lox;//TODO
         var language = "en", //TODO
             aux = "";
         ////////////////////////////
@@ -525,13 +635,22 @@ CommonModel =  module.exports = function(environment) {
         //TODO this requires a javascript way to paint the widgets
         ///////////////////////////
         var js = "javascript:fetchFromTree";
+        var neighborhood = populateNeighborhood(jsonTopic);
+        myResult.neighborhood = neighborhood;
         //TODO lots more
-        MillerColumn.makeColNav(contextLocator, jsonTopic, contextLocator,
+
+        JTree.makeTree(false, jsonTopic.lox, contextLocator, user.uName, userIP, //TODO uName?????
+            sToken, function cmMT(err, rx) {
+          myResult.myTree = rx;
+          console.log("XYZ "+JSON.stringify(myResult));
+          return callback(undefined, myResult);
+        });
+  /*      MillerColumn.makeColNav(contextLocator, jsonTopic, contextLocator,
               language, js, app, aux, user.uName, userIP, sToken , function cmMC(err, rslt) {
             console.log('MILLERCOLUMN '+JSON.stringify(rslt));
             console.log("BOO "+myResult);
             //TODO put rslt into result
             return callback(undefined, myResult);
-        });
+        }); */
     };
 };

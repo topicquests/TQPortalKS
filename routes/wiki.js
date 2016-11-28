@@ -49,7 +49,10 @@ exports.plugin = function(app, environment) {
     app.get("/wiki/:id", helpers.isPrivate, function(req, res) {
         var q = req.params.id,
             contextLocator = req.query.contextLocator;
-        console.log("GETWIKI"+q);
+        if (!contextLocator) {
+          contextLocator = q;
+        }
+      console.log("GETWIKI"+q);
         if (q) {
             var userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
                 userIP = "",
@@ -58,22 +61,97 @@ exports.plugin = function(app, environment) {
             CommonModel.fetchTopic(q, userId, userIP, sToken, function bFT(err, rslt) {
                 var data =  environment.getCoreUIData(req);
                 if (rslt.cargo) {
-                    //TODO populateConversationTopic
-                    data = CommonModel.populateTopic(rslt.cargo, theUser, data);
+                  CommonModel.populateConversationTopic(rslt.cargo, contextLocator, theUser, "/blog/", userIP, sToken,
+                              data, function bC(err, rslt) {
+                      data = rslt;
+                      data.locator = q;
+                      if (contextLocator && contextLocator !== "") {
+                          data.context = contextLocator;
+                      } else {
+                          data.context = q; // we are talking about responding to this blog
+                      }
+                      // deal with editing
+                      var canEdit = false;
+                      console.log("CANEDIT "+userId+" | "+data.userid+" | "+data.isAdmin);
+                      if (helpers.isLoggedIn) {
+                        if (userId === data.userid || data.isAdmin) {
+                          canEdit = true;
+                        }
+                      }
+                      data.canEdit = canEdit;
+                      data.editurl = "/wikiedit/"+q;
+                      return res.render("ctopic", data);
+                  });
+                }  else {
+                  req.flash("error", "Cannot get "+q);
+                  res.redirect("/");
                 }
-                data.locator = q;
-                if (contextLocator && contextLocator !== "") {
-                    data.context = contextLocator;
-                } else {
-                    data.context = q; // we are talking about responding to this blog
-                }
-                return res.render("topic", data);
             });
         } else {
             //That's not good!
             req.flash("error", "Cannot get "+q);
             res.redirect("/");
         }
+    });
+
+    app.get("/wikinext/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("WikiNext: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      WikiModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Wiki.index "+countsent+" "+data);
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("wikiindex", json);
+      });
+    });
+    app.get("/wikiprev/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("WikiPrev: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      WikiModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Wiki.index "+countsent+" "+data);
+
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("wikiindex", json);
+      });
     });
     /**
      * GET new wiki post form
@@ -117,4 +195,50 @@ exports.plugin = function(app, environment) {
             return res.redirect("/wiki");
         });
     });
+
+    app.get("/wikiedit/:id", helpers.isLoggedIn, function(req, res) {
+      var q = req.params.id,
+          contextLocator = req.query.contextLocator,
+          language = "en"; //TODO we need to deal with language
+      console.log("WikiEdit "+q+" "+contextLocator);
+      if (q) {
+          var userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+              theUser = helpers.getUser(req),
+              userIP = "",
+              sToken = req.session[Constants.SESSION_TOKEN];
+          CommonModel.fetchTopic(q, userId, userIP, sToken, function bFT(err, rslt) {
+              var data =  environment.getCoreUIData(req);
+              if (rslt.cargo) {
+                console.log("CARGO "+JSON.stringify(rslt.cargo));
+                data.action = "/wiki/edit";
+                data.formtitle = "Edit Wiki Topic";
+                data.locator = q; // this makes the form know it's for editing
+                data.title = "Title editing is disabled"; //rslt.cargo.label;
+                data.language = language;
+                data.body = rslt.cargo.details;
+                //TODO
+                return res.render("blogwikiform", data);
+              }
+          });
+        } else {
+            //That's not good!
+            req.flash("error", "Cannot get "+q);
+            res.redirect("/");
+        }
+    });
+
+    app.post("/wiki/edit", helpers.isLoggedIn, function(req, res) {
+      var body = req.body,
+          userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+          userIP = "",
+          sToken = req.session[Constants.SESSION_TOKEN];
+      console.log("WikiEditPost "+JSON.stringify(body));
+      _wikisupport(body, userId, userIP, sToken, function(err,result) {
+         console.log("WIKI_EDIT_POST-2 "+err+" "+result);
+         //technically, this should return to "/" since Lucene is not ready to display
+         // the new post; you have to refresh the page in any case
+         return res.redirect("/wiki");
+     });
+    });
+
 };

@@ -27,10 +27,17 @@ exports.plugin = function(app, environment) {
           CommonModel.fetchTopic(q, userId, userIP, sToken, function uFT(err, rslt) {
               var data =  environment.getCoreUIData(req);
               if (rslt.cargo) {
-                  data = CommonModel.populateTopic(rslt.cargo, theUser, data);
+                var lox = rslt.cargo.lox;
+                    data = CommonModel.populateTopic(rslt.cargo, theUser, data);
+                CommonModel.populateQuestTree(lox, lox, userId, userIP, sToken, function qPT(err, tree) {
+                  data.myTree = tree;
+                  console.log("CANJOIN "+q+" "+canJoin);
+                  return res.render("quest", data);
+                });
+              } else {
+                req.flash("error", "Cannot get "+q);
+                res.redirect("/");
               }
-              console.log("CANJOIN "+q+" "+canJoin);
-              return res.render("quest", data);
           });
       } else {
           //That's not good!

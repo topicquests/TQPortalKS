@@ -223,7 +223,7 @@ var AdminModel =  module.exports = function(environment) {
              console.log("UserAdmin.fillUserDatatable "+err+" | "+JSON.stringify(rslt));
              return callback(err, rslt);
         });
-        /////////////////////////////////////////
+        ///////////////////////////////////////// uName is now id
         //UserAdmin.fillUserDatatable undefined | {"rMsg":"ok","rToken":"","cargo":[{"uGeo
         //loc":"","uEmail":"TestUser@foo.org","uHomepage":"","uName":"defaultadmin","uFull
         //Name":"Default Admin","uRole":"rar, ror","uAvatar":""},{"uGeoloc":"|","uEmail":"

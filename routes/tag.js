@@ -26,7 +26,7 @@ exports.plugin = function(app, environment) {
         if (!count) {
             count = Constants.MAX_HIT_COUNT;
         }
-        console.log("BLOGS "+start+" "+count);
+        console.log("TAGS "+start+" "+count);
 
         var userId= helpers.getUserId(req),
             userIP= "",
@@ -35,7 +35,7 @@ exports.plugin = function(app, environment) {
             credentials = usx.uRole;
 
         TagModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
-            console.log("Blog.index "+data);
+            console.log("Tag.index "+data);
             var cursor = start+countsent,
                 json = environment.getCoreUIData(req);
             //pagination is based on start and count
@@ -46,6 +46,66 @@ exports.plugin = function(app, environment) {
             json.cargo = data.cargo;
             return res.render("tagindex", json);
         });
+    });
+
+    app.get("/tagnext/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("TagNext: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      TagModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Tag.index "+countsent+" "+data);
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("tagindex", json);
+      });
+    });
+    app.get("/tagprev/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("TagPrev: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      TagModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Tag.index "+countsent+" "+data);
+
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("tagindex", json);
+      });
     });
 
     app.get("/tag/:id", helpers.isPrivate, function(req, res) {
@@ -68,5 +128,26 @@ exports.plugin = function(app, environment) {
             req.flash("error", "Cannot get "+q);
             res.redirect("/");
         }
+    });
+
+    app.get("/tagnew/:id", helpers.isLoggedIn, function(req, res) {
+      var q = req.params.id,
+          data =  environment.getCoreUIData(req);
+      console.log("TAGNEW "+q);
+      data.locator = q;
+      data.language = "en"; //TODO
+      return res.render("add_tags_form", data);
+    });
+
+    app.post("/tag/new", helpers.isLoggedIn, function(req, res) {
+      var body = req.body,
+          userId = helpers.getUserId(req),
+          userIP = "",
+          sToken = req.session[Constants.SESSION_TOKEN];
+      console.log("TAG_NEW_POST "+JSON.stringify(body));
+//{"locator":"1eaa8fe2-4f48-4210-be86-f6d99e90ed2b","tag1":"Tag A","tag2":"Tag B","tag3":"","tag4":""}
+      TagModel.addTags(body, userId, userIP, sToken, function tpN(err, rslt) {
+        return res.redirect("/topic/"+body.locator);
+      });
     });
 };

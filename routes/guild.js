@@ -66,6 +66,7 @@ exports.plugin = function(app, environment) {
         credentials = c;
       }
       user.uRole = credentials; //TODO set back in session?
+      //NOTE: BacksideServlet uses uName, not uId for methods like this
       AdminModel.addUserRole(user.uName, guildId, function gA(err, rslt) {
         console.log("ADDEDMEMBER "+err);
         return callback(err);

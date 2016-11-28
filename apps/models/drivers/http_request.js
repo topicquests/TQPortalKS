@@ -27,7 +27,7 @@ function HttpClient(host, port, protocol) {
   }
   this.baseURL = this.protocol + '://' + this.host + ':' + this.port;
 
-  console.log('HttpClient', this.baseURL);
+  //console.log('HttpClient', this.baseURL);
 };
 
 /**
@@ -37,13 +37,13 @@ function HttpClient(host, port, protocol) {
  * @param callback signature (err, rslt)
  */
 HttpClient.prototype.get = function (path, queryJSON, callback) {
-  console.log('GET', prettyPrint(queryJSON));
+  //console.log('GET', prettyPrint(queryJSON));
   request.get({
     url: this.baseURL + path + encodeJSON(queryJSON),
     json: true
   }, function hra(err, response, body) {
     if (err) console.log('ERR', err);
-    console.log('HTTP-GET', prettyPrint(body));
+    //console.log('HTTP-GET', prettyPrint(body));
     return callback(err, body);
   });
 };
@@ -54,13 +54,13 @@ HttpClient.prototype.get = function (path, queryJSON, callback) {
  * @param callback
  */
 HttpClient.prototype.post = function (path, queryJSON, callback) {
-  console.log('POST', prettyPrint(queryJSON));
+  //console.log('POST', prettyPrint(queryJSON));
   request.post({
     url: this.baseURL + path + encodeJSON(queryJSON),
     json: true
   }, function hra(err, response, body) {
     if (err) console.log('ERR', err);
-    console.log('HTTP-POST', prettyPrint(body));
+    //console.log('HTTP-POST', prettyPrint(body));
     return callback(err, body);
   });
 };

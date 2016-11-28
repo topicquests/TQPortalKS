@@ -15,6 +15,7 @@ var Constants = require("../constants"),
 GuildModel =  module.exports = function(environment) {
     var self = this,
         topicDriver = environment.getTopicDriver(),
+        ConversationModel = environment.getConversationModel(),
         CommonModel = environment.getCommonModel(),
         AdminModel = environment.getAdminModel();
     console.log("GUILD "+topicDriver);
@@ -28,6 +29,9 @@ GuildModel =  module.exports = function(environment) {
         });
     };
 
+    /**
+     * Create a new Guild topic
+     */
     self.create = function(json, userId, userIP, sToken, callback) {
         console.log("GUILD_MODEL_NEW_TOPIC "+JSON.stringify(json)+" | "+userId);
         var pivots = CommonModel.jsonBallToPivots(json),

@@ -3,7 +3,8 @@
  */
 
 var QueryUtil = module.exports = function() {
-    var self = this;
+    var self = this,
+        undefined; // leave alone
 
     //////////////////////////
     //API
@@ -30,16 +31,16 @@ var QueryUtil = module.exports = function() {
      * @return {*}
      */
    self.getCoreQuery= function(verb, userId, userIP, sToken) {
-        console.log("COREQUERY "+sToken);
+        console.log("COREQUERY "+verb+" "+sToken);
         var query = {};
         query.verb = verb;
         query.uIP = userIP;
-        query.uName = userId;
-        var xtk = sToken;
-       if (xtk === null) {
-           xtk = '';
-       }
-        query.sToken = xtk;
+        query.id = userId;
+        if (sToken === undefined || sToken === null) {
+          query.sToken = "";
+        } else {
+          query.sToken = sToken;
+        }
         return query;
     };
 };

@@ -59,6 +59,8 @@ var Environment = function() {
     self.init = function() {
         console.log("Environment initializing");
         console.log('CONFIG '+JSON.stringify(configProperties));
+
+
         //boot in order of need
         //configure HttpClient to talk to BacksideServlet
         httpClient = new Req(configProperties.backsideHost, configProperties.backsidePort, configProperties.backsideProtocol);

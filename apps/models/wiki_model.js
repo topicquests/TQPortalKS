@@ -32,6 +32,10 @@ WikiModel =  module.exports = function(environment) {
     };
 
     self.update = function(json, userId, userIP, sToken, callback) {
-        //TODO
+      console.log("WIKI_MODEL_UPDATE_POST "+JSON.stringify(json)+" | "+JSON.stringify(userId));
+
+      CommonModel.updateTopicTextFields(json, userId, userIP, sToken, function bmU(err, rslt) {
+        return callback(err, rslt);
+      });
     };
 };

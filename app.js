@@ -22,6 +22,14 @@ app.set("view engine", "hbs");
 app.set("views", viewPath); //path.join(__dirname, "/views"));
 app.use(flash());
 
+//Custom handlebars
+// used in painting connections
+hbs.registerHelper("isSrc", function(context, options) {
+  var fnTrue = options.fn,
+        fnFalse = options.inverse;
+  return (context === "s") ? fnTrue(this) : fnFalse(this);
+});
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
 app.use(logger("dev"));
@@ -29,6 +37,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(cookieParser()); // collides with session
 app.use(express.static(path.join(__dirname, "public")));
+
 app.use(session({
   genid: function(req) {
     return uuid.v4(); // use UUIDs for session IDs

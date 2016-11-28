@@ -1,11 +1,9 @@
-<div class="container"><h1></h1>
-    <ul id="myConTree">
-    </ul>
-</div>
+<h1></h1>
 <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#topic">Topic</a></li>
     <li><a data-toggle="tab" href="#list">List View</a></li>
-    <li><a data-toggle="tab" title="Conversations in which I am a child node" href="#cconv">C-Conversation</a></li>
+    <li><a data-toggle="tab" title="My conversation tree in a given context" href="#cconv">Conversation Child Nodes</a></li>
+    <li><a data-toggle="tab" title="Conversation parents and nearest child nodes" href="#nconv">Conversation Neighborhood</a></li>
     <li><a data-toggle="tab" href="#relations">Connections</a></li>
     <li><a data-toggle="tab" href="#source">Source</a></li>
 </ul>
@@ -21,7 +19,12 @@
                 <h2>{{label}}</h2>
                 <p class="blog-post-meta">
                     <div class="userref">
-                        <a href="/user/{{userid}}">{{username}}</a>&nbsp;&nbsp;{{date}}<br/>
+                        <a href="/user/{{userid}}">{{username}}</a>&nbsp;&nbsp;{{date}}
+                        {{#if canEdit}}
+                          &nbsp;&nbsp;<a href='{{editurl}}'>Edit</a><br/>
+                        {{else}}
+                          <br/>
+                        {{/if}}
                     </div>
                     <div class="urlref"><a href="{{url}}">{{url}}</a></div>
                 </p>
@@ -32,41 +35,33 @@
                     <hr><br/><br/>
                     <h3> Activities</h3>
                     <!-- reply buttons -->
-                    {{#if transcludelocator}}
-                      <p>
-                        <a href="/transclude/{{transcludelocator}}"><button type="submit" class="btn btn-btn-success btn-small">Transclude Remembered Topic</button></a>
-                      </p>
-                    {{/if}}
-                    {{#if transcludeevidencelocator}}
+                    {{> transcludes}}
                     <p>
-                        <a href="/transcludeevidence/{{transcludeevidencelocator}}"><button type="submit" class="btn btn-btn-success btn-small">Remember as Evidence</button></a><br />
-                    </p>
-                    {{/if}}
-                      <p>
-                        <a href="/remember/{{locator}}"><button type="submit" class="btn btn-btn-success btn-small">Remember</button></a>
-                        <a href="/rememberevidence/{{locator}}"><button type="submit" class="btn btn-btn-success btn-small">Remember as Evidence</button></a><br />
+                      <!-- remember these nodes for transclusion or connections -->
+                      <a href="/remember/{{locator}}"><button type="submit" class="btn btn-btn-success btn-small">Remember</button></a>
+                      <a href="/rememberevidence/{{locator}}"><button type="submit" class="btn btn-btn-success btn-small">Remember as Evidence</button></a><br />
                     </p>
                     <p>
-                        <table border="1">
-                            <tr>
-                                <td>
-                                    <a href="/newquestion/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Question" src="/images/ibis/issue.png"></button></a>
-                                </td>
-                                <td>
-                                    <a href="/newanswer/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Answer" src="/images/ibis/position.png"></button></a>
-                                </td>
-                                <td>
-                                    <a href="/newpro/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Pro Argument" src="/images/ibis/plus.png"></button></a>
-                                </td>
-                                <td>
-                                    <a href="/newcon/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Con Argument" src="/images/ibis/minus.png"></button></a>
-                                </td>
-                                <td>
-                                    <a href="/newreference/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Reference Link" src="/images/ibis/reference.png"></button></a>
-                                </td>
+                      <table border="1">
+                          <tr>
+                              <td>
+                                  <a href="/newquestion/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Question" src="/images/ibis/issue.png"></button></a>
+                              </td>
+                              <td>
+                                  <a href="/newanswer/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Answer" src="/images/ibis/position.png"></button></a>
+                              </td>
+                              <td>
+                                  <a href="/newpro/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Pro Argument" src="/images/ibis/plus.png"></button></a>
+                              </td>
+                              <td>
+                                  <a href="/newcon/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Con Argument" src="/images/ibis/minus.png"></button></a>
+                              </td>
+                              <td>
+                                  <a href="/newreference/{{locator}}?contextLocator={{context}}"><button type="submit" class="btn btn-btn-success btn-small"><img title="New Reference Link" src="/images/ibis/reference.png"></button></a>
+                              </td>
 
-                            </tr>
-                        </table>
+                          </tr>
+                      </table>
                     </p>
                 {{/if}}
             </div> <!-- /col 8 -->
@@ -79,7 +74,12 @@
             <h2>{{label}}</h2>
            <p class="blog-post-meta">
                 <div class="userref">
-                    <a href="/user/{{userid}}">{{username}}</a>&nbsp;&nbsp;{{date}}<br/>
+                    <a href="/user/{{userid}}">{{username}}</a>&nbsp;&nbsp;{{date}}
+                    {{#if canEdit}}
+                      &nbsp;&nbsp;<a href='{{editurl}}'>Edit</a><br/>
+                    {{else}}
+                      <br/>
+                    {{/if}}
                 </div>
                 <div class="urlref"><a href="{{url}}">{{url}}</a></div>
             </p>
@@ -91,15 +91,51 @@
         </div>
     </div> <!-- /list -->
     <div id="cconv" class="tab-pane fade">
-        <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;"></div>
+        <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;">
+          <div id="myConTree">{{{myTree}}}</div>
+        </div>
     </div> <!-- /cconv -->
+    <div id="nconv" class="tab-pane fade">
+        <div class="ccontable pre-scrollable" style="border: 1px solid #e1e1e8;">
+          <h3>Conversation Neighborhood</h3>
+          <div id="neighborhood">{{{neighborhood}}}</div>
+        </div>
+    </div> <!-- /nconv -->
 
     <div id="source" class="tab-pane fade">
         <div class="sourcecode">{{source}}</div>
     </div>
     <div id="relations" class="tab-pane fade">
         <h1>Connections</h1>
-        <div class="newreln"></div>
+        <div class="newreln">
+          {{#if isAuthenticated}}
+            <table border="1">
+              <tr><th>Source</th><th>Target</th></tr>
+              <tr>
+                <td><a href="/relationnew/?srclocator={{locator}}"><button type="submit" class="btn btn-btn-success btn-small">New Relation</button></a></td>
+                <td><a href="/relationnew/?trglocator={{locator}}"><button type="submit" class="btn btn-btn-success btn-small">New Relation</button></a></td>
+              </tr>
+            </table>
+          {{/if}}
+          {{#if connections}}
+            <table>
+              <tr><th width="30%">Source</th><th width="30%">Relation</th><th width="30%">Target</th></tr>
+              {{#each connections}}
+                <tr>
+                  {{#isSrc sORt}}
+                    <td>This Topic</td>
+                    <td><a href='/topic/{{relationLocator}}'><img src='/images/cogwheels_sm.png'>{{relationLabel}}</a></td>
+                    <td><a href='/topic/{{documentLocator}}'><img src='{{documentSmallIcon}}'>{{documentLabel}}</a></td>
+                  {{else}}
+                    <td><a href='/topic/{{documentLocator}}'><img src='{{documentSmallIcon}}'>{{documentLabel}}</a></td>
+                    <td><a href='/topic/{{relationLocator}}'><img src='/images/cogwheels_sm.png'>{{relationLabel}}</a></td>
+                    <td>This Topic</td>
+                  {{/isSrc}}
+                </tr>
+              {{/each}}
+            </table>
+          {{/if}}
+        </div>
         <div class="relationlist"></div>
     </div>
 </div>

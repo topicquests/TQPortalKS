@@ -4,7 +4,7 @@
 var Constants = require("../../apps/constants"),
     Helpers;
 
-Helpers = function (environment) {
+Helpers =  module.exports = function (environment) {
     var self = this,
         isPrivatePortal = environment.getIsPrivatePortal();
 
@@ -31,22 +31,23 @@ Helpers = function (environment) {
         return res.redirect("/");
     };
 
-    //TODO technically, this is dealing with arrays, not strings--CHANGEME
+
     self.isAdmin = function (req, res, next) {
         var theUser = req.session[Constants.THE_USER];
         console.log("ADMINUSER "+theUser);
         if (theUser) {
-            var roles = theUser.uRole;
-            console.log("ATMINTEST "+roles.length);
-            var where = roles.indexOf(Constants.ADMIN_CREDENTIALS);
-            console.log("ADMINROLES "+roles+" "+where);
-            if (where > -1) {
-                return next();
-            } else {
-                return res.redirect("/");
-            }
-        } else {
+          //roles are an array
+          var roles = theUser.uRole;
+          console.log("ATMINTEST "+roles.length);
+          var where = roles.indexOf(Constants.ADMIN_CREDENTIALS);
+          console.log("ADMINROLES "+roles+" "+where);
+          if (where > -1) {
+            return next();
+          } else {
             return res.redirect("/");
+          }
+        } else {
+          return res.redirect("/");
         }
     };
 
@@ -54,7 +55,7 @@ Helpers = function (environment) {
         var result = req.session[Constants.THE_USER];
         if (!result) {
             result = {};
-            result.uName = Constants.GUEST_USER;
+            result.id = Constants.GUEST_USER;
         }
         return result;
     };
@@ -62,7 +63,7 @@ Helpers = function (environment) {
     self.getUserId = function(req) {
       var u = self.getUser(req);
       if (u) {
-        return u.uName;
+        return u.uId;
       }
       return null;
     };
@@ -93,6 +94,9 @@ Helpers = function (environment) {
           }
     };
 
+    /**
+     * validates numbers for paging
+     */
     self.validateNumber = function(number) {
       if (!number || number === "Nan") {
         return 0; // default
@@ -112,5 +116,3 @@ Helpers = function (environment) {
     };
 
 };
-
-module.exports = Helpers;

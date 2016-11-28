@@ -209,7 +209,7 @@ var UserDriver =  module.exports = function(environment) {
         var urx = '/user/',
             verb = Constants.REMOVE_USER,
             query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
-        query.uName = userId;
+        query.id = userId;
         httpClient.post(urx, query, function udLI(err, rslt) {
             return callback(err, rslt);
         });
@@ -225,7 +225,7 @@ var UserDriver =  module.exports = function(environment) {
             verb = Constants.UPDATE_ROLE,
             query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
         query.uRole = newRole;
-        query.uName = userId;
+        query.id = userId;
         console.log("UserDriver.addUserRole "+JSON.stringify(query));
         httpClient.post(urx, query, function udLI(err, rslt) {
             return callback(err, rslt);
@@ -236,7 +236,7 @@ var UserDriver =  module.exports = function(environment) {
             verb = Constants.REMOVE_ROLE,
             query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
         query.uRole = oldRole;
-        query.uName = userId;
+        query.uId = userId;
         console.log("UserDriver.removeUserRole "+JSON.stringify(query));
         httpClient.post(urx, query, function udLI(err, rslt) {
             return callback(err, rslt);

@@ -67,4 +67,131 @@ exports.plugin = function(app, environment) {
           });
       });
     });
+    /////////////////////////
+    // TODO
+    //  ANY next/previous MUST refresh the entire page
+    // Using a tabbed pane gives us the UX issue:
+    //   clicking Next or Previous refreshes the entire page
+    // WORSE
+    //   This probably cannot work!
+    /////////////////////////
+    app.get("/questnext/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("QuestNext: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      QuestModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Quest.index "+countsent+" "+data);
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("rpg", json);
+      });
+    });
+    app.get("/questprev/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("QuestPrev: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      QuestModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Quest.index "+countsent+" "+data);
+
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("rpg", json);
+      });
+    });
+
+    app.get("/guildnext/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("GuildNext: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      GuildModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Guild.index "+countsent+" "+data);
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("rpg", json);
+      });
+    });
+    app.get("/guildprev/:id", helpers.isPrivate, function(req, res) {
+      var start = parseInt(req.params.id),
+          count = Constants.MAX_HIT_COUNT;
+      console.log("GuildPrev: "+start);
+      //OK: we get here. "start" sets the cursor.
+      var userId= helpers.getUserId(req),
+          userIP= "",
+          sToken= null,
+          usx = helpers.getUser(req),
+          credentials = usx.uRole;
+      GuildModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {
+          console.log("Guild.index "+countsent+" "+data);
+
+          var cursor = start+countsent,
+              json = environment.getCoreUIData(req);
+          //pagination is based on start and count
+          //both values are maintained in an html div
+          json.start = cursor;
+          json.count = Constants.MAX_HIT_COUNT; //pagination size
+          json.total = totalavailable;
+          json.cargo = data.cargo;
+          if (cursor > 0) {
+            var ret = cursor - count;
+            if (ret < 0)
+              ret = 0;
+            json.ret = ret;
+          }
+          return res.render("rpg", json);
+      });
+    });
   };
