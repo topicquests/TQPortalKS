@@ -216,16 +216,16 @@ var UserDriver =  module.exports = function(environment) {
     };
     /**
      * for admins only
-     * @param userId -- NOT the id of the logged in user; rather the user being updated
+     * @param userHandle -- NOT the id of the logged in user; rather the user being updated
      * @param newRole
      * @param callback signature (err, rslt)
      */
-    self.addUserRole = function(userId, newRole, callback) {
+    self.addUserRole = function(userHandle, newRole, callback) {
         var urx = '/admin/',
             verb = Constants.UPDATE_ROLE,
             query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
         query.uRole = newRole;
-        query.id = userId;
+        query.uName = userHandle;
         console.log("UserDriver.addUserRole "+JSON.stringify(query));
         httpClient.post(urx, query, function udLI(err, rslt) {
             return callback(err, rslt);
