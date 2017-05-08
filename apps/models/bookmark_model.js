@@ -16,10 +16,15 @@ BookmarkModel =  module.exports = function(environment) {
     self.fillDatatable = function(start, count, userId, userIP, sToken, callback) {
       console.log("BookmarkModel.fillDatatable "+userId);
       topicDriver.listInstanceTopics(Constants.BOOKMARK_NODE_TYPE, start, count,
+          Constants.SORT_LABEL, Constants.ASC_DIR,
           userId, userIP, sToken, function bmF(err, rslt) {
         console.log("LISTbookmarks "+err+" | "+JSON.stringify(rslt));
-        //TODO
-        return callback(err, rslt, 0, 0);
+        var count = 0,
+            d = rslt.cargo;
+        if (d) {
+          count = d.length;
+        }
+        return callback(err, rslt, count, 0);
       });
     };
 

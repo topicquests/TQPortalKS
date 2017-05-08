@@ -23,9 +23,11 @@ exports.plugin = function(app, environment) {
       console.log("CC "+JSON.stringify(cargo));
       var email = cargo.uEmail,
           roles = cargo.uRole,
-          id = cargo.uName;
+          id = cargo.uId,
+          handle = cargo.uName;
       req.session[Constants.USER_EMAIL] = email;
       req.session[Constants.USER_ID] = id;
+      req.session[Constants.USER_HANDLE] = handle;
       //console.log("ADMINROLES "+roles+" "+roles.length);
       //TODO this is an array, not a string: CHANGEME
       var where = roles.indexOf(Constants.ADMIN_CREDENTIALS);
@@ -143,7 +145,7 @@ exports.plugin = function(app, environment) {
           var msg = environment.getCoreUIData(req);
           //TODO title could be a configuration setting
           msg.title = "TopicQuests Foundation's Prototype Collaboration Portal";
-          return res.render("index", msg);
+          res.redirect("/");
       });
     });
 
@@ -257,6 +259,10 @@ exports.plugin = function(app, environment) {
       });
     });
 
+    //Called from listuser form when credentials are to be modified
+    //{"rMsg":"ok","rToken":"","cargo":{"uGeoloc":"|","uEmail"
+    //:"jackpark@gmail.com","uId":"9a4646d7-5b49-44e7-8c63-b00f9479b804","uHomepage":"
+    //","uName":"jackpark","uFullName":"Jack Park","uRole":["rur"],"uAvatar":""}}
     app.get("/selectuser", helpers.isAdmin, function(req, res) {
       var email = req.query.email;
       console.log("Admin.selectuser "+email);
@@ -264,17 +270,16 @@ exports.plugin = function(app, environment) {
           console.log("Admin.selectuser-1 "+err+" "+JSON.stringify(data));
           //TODO watch for null
           var d = environment.getCoreUIData(req)
-          d.name = data.cargo.uName;
-          d.email = email;
+          d.id = data.cargo.uId;
           d.credentials = data.cargo.uRole;
           res.render("editcredentials",d);
       });
     });
 
-    app.get("/removeuser", helpers.isAdmin, function(req,res) {
+    app.get("/removeuser", helpers.isAdmin, function(req, res) {
       var userId = req.query.handle;
       console.log("Admin.selectuser "+userId);
-      AdminModel.removeUser(userId, function(err,data) {
+      AdminModel.removeUser(userId, function(err, data) {
           res.redirect("/admin");
       });
     });
@@ -298,19 +303,17 @@ exports.plugin = function(app, environment) {
     });
     */
     app.post("/addrole", helpers.isAdmin, function(req, res) {
-      var userId = req.body.name,
-          email = req.body.email,
+      var userId = req.body.id,
           creds = req.body.addcredentials;
       console.log("Admin.addRole "+userId+" "+creds);
-      AdminModel.addUserRole(userId, creds, function aUur(err, data) {
+      AdminModel.addUserRole(userId, creds, function aUar(err, data) {
           console.log("Admin.addRole-1 "+err);
           return res.redirect("/admin");
       });
     });
 
     app.post("/removerole", helpers.isAdmin, function(req, res) {
-      var userId = req.body.name,
-          email = req.body.email,
+      var userId = req.body.id,
           creds = req.body.removecredentials;
 
       console.log("Admin.removeRole "+userId+" "+creds);
@@ -326,25 +329,41 @@ exports.plugin = function(app, environment) {
 
     app.post("/changeEmail", helpers.isLoggedIn, function(req, res) {
         var userId = req.session[Constants.USER_ID],
+            sToken = req.session[Constants.SESSION_TOKEN],
             newEmail = email;
-        AdminModel.updateUserEmail(userId, newEmail, function aUe(err, rslt) {
+        AdminModel.updateUserEmail(userId, newEmail, sToken, function aUe(err, rslt) {
             return res.redirect("/");
         });
     });
 
     app.post("/changeHomepage", helpers.isLoggedIn, function(req, res) {
-        console.log("CHANGE HOMEPAGE");
-        return res.redirect("/");
+        var url = req.body.homepage,
+            sToken = req.session[Constants.SESSION_TOKEN],
+            userId = req.session[Constants.USER_ID];
+            console.log("CHANGE HOMEPAGE "+userId+" "+url);
+        AdminModel.updateUserHomepage(userId, url, sToken, function aUP(err, rslt) {
+          return res.redirect("/");
+        });
     });
 
     app.post("/changeGeoLoc", helpers.isLoggedIn, function(req, res) {
         console.log("CHANGE GEOLOC");
-        return res.redirect("/");
+        var lat = req.body.Latitude,
+            lon = req.body.Longitude,
+            sToken = req.session[Constants.SESSION_TOKEN],
+            userId = req.session[Constants.USER_ID];
+        AdminModel.updateUserGeolocation(userId, lat, lon, sToken, function aUG(err, rslt) {
+          return res.redirect("/");
+        });
     });
 
     app.post("/changePwd", helpers.isLoggedIn, function(req, res) {
         console.log("CHANGE PASSWORD");
-        return res.redirect("/");
+        var pwd = req.body.pwd,
+            sToken = req.session[Constants.SESSION_TOKEN];
+        AdminModel.changePwd(pwd, sToken, function aCp(err, rslt)  {
+          return res.redirect("/");
+      });
     });
 
     ///////////////////////////////
@@ -352,15 +371,24 @@ exports.plugin = function(app, environment) {
     ///////////////////////////////
     app.get("/admin", helpers.isAdmin, function(req, res) {
         console.log("FIRING ADMIN");
-        res.render("admin",environment.getCoreUIData(req));
+        return res.render("admin",environment.getCoreUIData(req));
     });
     app.get("/admin/setmessage", helpers.isAdmin, function(req,res) {
         var msg = req.query.message;
         environment.setMessage(msg);
-        res.redirect("/admin");
+        return res.redirect("/admin");
     });
     app.get("/clearmessage", helpers.isAdmin, function(req,res) {
         environment.clearMessage();
-        res.redirect("/admin");
+        return res.redirect("/admin");
+    });
+
+    app.post("/migrateuser", helpers.isAdmin, function(req,res) {
+      var oldId = req.body.oldId,
+          newId = req.body.newId;
+          console.log("MIGRATE "+oldId+" "+newId);
+      AdminModel.migrateUserId(oldId, newId, function aMg(err, rslt) {
+          return res.redirect("/admin");
+      });
     });
 };

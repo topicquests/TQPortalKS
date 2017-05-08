@@ -52,6 +52,7 @@ exports.plugin = function(app, environment) {
             json.start = cursor;
             json.count = Constants.MAX_HIT_COUNT; //pagination size
             json.total = totalavailable;
+            json.ret = 0; //TODO
             json.cargo = data.cargo;
             return res.render("bookmarkindex", json);
         });

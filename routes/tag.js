@@ -44,6 +44,7 @@ exports.plugin = function(app, environment) {
             json.count = Constants.MAX_HIT_COUNT; //pagination size
             json.total = totalavailable;
             json.cargo = data.cargo;
+            json.ret = 0;
             return res.render("tagindex", json);
         });
     });

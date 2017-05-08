@@ -2,10 +2,12 @@
  * Created by park on 11/17/2015.
  */
 
-var Help = require("./helpers/helpers");
+var Constants = require("../apps/constants"),
+    Help = require("./helpers/helpers");
 
 exports.plugin = function(app, environment) {
-    var helpers = new Help(environment);
+    var helpers = new Help(environment),
+    TagModel = environment.getTagModel();
     console.log("Landing "+environment.getIsPrivatePortal());
     /////////////
     // Routes
@@ -20,7 +22,15 @@ exports.plugin = function(app, environment) {
         var data = environment.getCoreUIData(req);
         data.title = "TQPortalKS";
         //return res.render('index',  data);
-        return res.render("dragons", data);
+        //Get HelpTag topic
+        var userId = helpers.getUserId(req), //req.session[Constants.USER_ID],
+            userIP = "",
+            theUser = helpers.getUser(req),
+            sToken = req.session[Constants.SESSION_TOKEN];
+        TagModel.listDocumentsForHelpTopicTag(data, userId, userIP, sToken, function bFT() {
+          //TODO?
+          return res.render("newlanding", data);
+        });
     });
 
     app.post("/landing", helpers.isPrivate, function(req, res) {

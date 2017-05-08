@@ -51,9 +51,10 @@ module.exports.FIND_OR_PROCESS_TAG =    "FindProcessTag";
 module.exports.FIND_OR_CREATE_BOOKMARK= "FindProcessBookmark";
 module.exports.LIST_TREE_CHILD_NODES	= "ListTreeNodes";
 module.exports.COLLECT_CONVERSATION_TREE	= "ColConTree";
-module.exports.LIST_ALL_BLOG_POSTS		= "ListAllBlogs";
+//module.exports.LIST_ALL_BLOG_POSTS		= "ListAllBlogs";
 module.exports.LIST_BLOGS_BY_USER		=   "ListUserBlogs";
 module.exports.TRANSCLUDE   =           "Transclude";
+module.exports.LIST_BY_TEXT_QUERY			= "ListByTextQuery"; //full text search
 //RPG VERBS
 module.exports.ADD_LEADER			=         "AddLeader";
 module.exports.REMOVE_LEADER		=       "RemoveLeader";
@@ -167,6 +168,20 @@ module.exports.ADMIN_CREDENTIALS        ="rar";
 module.exports.SESSION_TOKEN =          "SessToken";
 module.exports.USER_EMAIL =             "SessUsrEmail";
 module.exports.USER_ID =                "SessUserId";
+module.exports.USER_HANDLE =            "SessUserHdl";
 module.exports.USER_IS_ADMIN =          "SessUsrAdmin";  //will be true or null
 module.exports.THE_USER  =              "SessionUser";
 module.exports.USER_IS_AUTHENTICATED =  "SessUserAuth"; //will be true or null
+
+//QUERY FIELDS
+module.exports.SORT_START	    = "start";
+module.exports.SORT_COUNT	    = "count";
+module.exports.SORT_BY		    = "sortBy";
+module.exports.SORT_DIR	      = "sortDir";
+module.exports.SORT_DATE	    = "crDt"; 	//sortBy: "crDt"
+module.exports.SORT_LABEL	    = "label";	//sortBy: "label" -- alphabetical sort
+module.exports.SORT_VAL	      = "val";	//sortBy: "val" -- a value number
+module.exports.SORT_CREATOR   = "crtr",	//sortBy: "crtr"
+
+module.exports.ASC_DIR		    = "asc";	//sortDir: "asc"
+module.exports.DSC_DIR		    = "desc";	//sortDir: "dsc"

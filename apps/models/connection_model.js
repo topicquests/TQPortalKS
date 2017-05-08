@@ -28,6 +28,7 @@ ConnectionModel =  module.exports = function(environment) {
      * @param callback
      */
     self.createConnection = function(json, userId, userIP, sToken, callback) {
+      console.log("ConnectionModel.create "+userId+" "+userIP+" "+sToken);
       json.RelTypLoc = json.select;
       json.RelSrcLoc = json.srclocator;
       json.RelTrgLoc = json.trglocator;

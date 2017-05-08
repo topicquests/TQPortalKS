@@ -20,6 +20,7 @@ var Req = require("./models/drivers/http_request"),
     Tdrvr = require("./models/drivers/topic_driver"),
     Udrvr = require("./models/drivers/user_driver"),
     configProperties = require("../config/config.json"),
+    rbuf = require("./ringbuffer"),
 //TODO defaults will be replaced by config.json values
     defaults = {
         server: {
@@ -46,6 +47,15 @@ var Environment = function() {
          topicDriver,
          userDriver,
          backsideURL,
+         blogRing,
+
+          wikiRing,
+          tagRing,
+          conversationRing,
+          connectionRing,
+          bookmarkRing,
+          transcludeRing,
+
      //view data
          appMenu,
          isInvitationOnly,
@@ -80,6 +90,13 @@ var Environment = function() {
         guildModel = new Gm(this);
         searchModel = new Srch(this);
         backsideURL = configProperties.backsideProtocol+'://'+configProperties.backsideHost+':'+configProperties.backsidePort+'/';
+        blogRing = new rbuf(20, "blog", null);
+        wikiRing= new rbuf(20, "wiki", null);
+        tagRing= new rbuf(20,"tag", null);
+        bookmarkRing = new rbuf(20,"bookmark",null);
+        conversationRing = new rbuf(20,"conversation",null);
+        connectionRing = new rbuf(20, "Connections", null);
+        transcludeRing = new rbuf(20, "Transcludes",null);
         console.log("Environment initialized");
     };
 
@@ -192,6 +209,57 @@ var Environment = function() {
 
     self.getConversationModel = function() {
         return conversationModel;
+    };
+
+    /////////////////////////
+    // Recent events recording
+    //TODO move these to applications, and let them install
+    // listeners here to fetch them when needed
+    /////////////////////////
+    self.addRecentTag = function(locator,label) {
+      var d = new Date().getTime();
+      var d = new Date().getTime();
+      tagRing.add(locator,label,d);
+    };
+    self.addRecentBlog = function(locator,label) {
+      var d = new Date().getTime();
+      blogRing.add(locator,label,d);
+    },
+    self.addRecentWiki = function(locator,label) {
+      var d = new Date().getTime();
+      wikiRing.add(locator,label,d);
+    };
+    self.addRecentBookmark = function(locator,label) {
+      var d = new Date().getTime();
+      bookmarkRing.add(locator,label,d);
+    };
+    self.addRecentConversation = function(locator,label) {
+      var d = new Date().getTime();
+      conversationRing.add(locator,label,d);
+    };
+    self.addRecentConnection = function(locator,label) {
+        var d = new Date().getTime();
+        connectionRing.add(locator,label,d);
+    };
+
+    self.listRecentTags = function() {
+      return tagRing.getReversedData();
+    };
+    self.listRecentBlogs = function() {
+      return blogRing.getReversedData();
+    };
+    self.listRecentWikis = function() {
+      return wikiRing.getReversedData();
+    };
+    self.listRecentBookmarks = function() {
+      return bookmarkRing.getReversedData();
+    },
+    self.listRecentConversations = function() {
+      return conversationRing.getReversedData();
+    };
+
+    self.listRecentConnections = function() {
+        return connectionRing.getReversedData();
     };
 };
 
