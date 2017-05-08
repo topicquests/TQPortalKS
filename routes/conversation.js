@@ -39,7 +39,7 @@ exports.plugin = function(app, environment) {
         var userId= helpers.getUserId(req),
             userIP= "",
             sToken= null,
-            usx = helpers.getUser(req);
+            usx = helpers.getUser(req),
             credentials = usx.uRole;
 
         ConversationModel.fillDatatable(start, count, userId, userIP, sToken, function blogFill(err, data, countsent, totalavailable) {

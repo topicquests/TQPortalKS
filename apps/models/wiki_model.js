@@ -6,15 +6,22 @@ var Constants = require("../constants"),
 
 WikiModel =  module.exports = function(environment) {
     var self = this,
-        topicDriver = environment.getTopicDriver();
+        topicDriver = environment.getTopicDriver(),
+        CommonModel = environment.getCommonModel();
     console.log("Wiki "+topicDriver);
 
     self.fillDatatable = function(start, count, userId, userIP, sToken, callback) {
       console.log("BlogModel.fillDatatable "+userId);
-      topicDriver.listInstanceTopics(Constants.WIKI_TYPE, start, count, userId,
-          userIP, sToken, function bmF(err, rslt) {
+      topicDriver.listInstanceTopics(Constants.WIKI_TYPE, start, count, 
+        Constants.SORT_LABEL, Constants.ASC_DIR,
+          userId, userIP, sToken, function bmF(err, rslt) {
         console.log("LISTWIKIS "+err+" | "+JSON.stringify(rslt));
-        return callback(err, rslt, 0, 0);
+        var count = 0,
+            d = rslt.cargo;
+        if (d) {
+          count = d.length;
+        }
+        return callback(err, rslt, count, 0);
       });
     };
 

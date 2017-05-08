@@ -6,7 +6,8 @@ var Constants = require("../constants"),
 
 UserModel =  module.exports = function(environment) {
     var self = this,
-        topicDriver = environment.getTopicDriver();
+        topicDriver = environment.getTopicDriver(),
+        CommonModel = environment.getCommonModel();
     console.log("User "+topicDriver);
 
     self.listUsers = function(start, count, callback) {
@@ -36,4 +37,13 @@ UserModel =  module.exports = function(environment) {
         return callback(err, rslt);
       });
     };
+
+    self.update = function(json, userId, userIP, sToken, callback) {
+      console.log("USER_MODEL_UPDATE "+JSON.stringify(json)+" | "+JSON.stringify(userId));
+
+      CommonModel.updateTopicTextFields(json, userId, userIP, sToken, function bmU(err, rslt) {
+        return callback(err, rslt);
+      });
+    };
+
 };

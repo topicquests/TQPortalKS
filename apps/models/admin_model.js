@@ -275,4 +275,17 @@ var AdminModel =  module.exports = function(environment) {
         });
     };
 
+    self.migrateUserId = function(oldId, newId, callback) {
+      userDriver.migrateUserId(oldId,newId, function uaMM(err, rslt) {
+        return callback(err, rslt);
+      });
+    };
+
+    self.changePwd = function(newPwd, sessionToken, callback) {
+      userDriver.changePwd(newPwd, sessionToken, function uaMM(err, rslt) {
+        return callback(err, rslt);
+      });
+
+    }
+
 };

@@ -40,7 +40,7 @@ var UserDriver =  module.exports = function(environment) {
      * @param callback signature (error, userProfile)
      */
     self.login = function(userEmail, password, callback) {
-        var  verb = Constants.AUTHENTICATE,
+        var verb = Constants.AUTHENTICATE,
             query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
 
         httpClient.authenticate
@@ -85,6 +85,17 @@ var UserDriver =  module.exports = function(environment) {
         });
     };
 
+    self.migrateUserId = function(oldId, newId, callback) {
+      var urx = '/admin/',
+          verb = "MigrateUsrId",
+          query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
+      query.oldId = oldId;
+      query.newId = newId;
+      query.sToken = '';
+      httpClient.post(urx, query, function udM(err, rslt) {
+          return callback(err, rslt);
+      });
+    };
     /**
      * <p>Register a new user account, which also creates a topic in the topic map
      * for that user.</p>
@@ -220,17 +231,18 @@ var UserDriver =  module.exports = function(environment) {
      * @param newRole
      * @param callback signature (err, rslt)
      */
-    self.addUserRole = function(userHandle, newRole, callback) {
+    self.addUserRole = function(userId, newRole, callback) {
         var urx = '/admin/',
             verb = Constants.UPDATE_ROLE,
             query = queryUtil.getCoreQuery(verb, "SystemUser", '', null);
         query.uRole = newRole;
-        query.uName = userHandle;
+        query.uId = userId;
         console.log("UserDriver.addUserRole "+JSON.stringify(query));
         httpClient.post(urx, query, function udLI(err, rslt) {
             return callback(err, rslt);
         });
     };
+
     self.removeUserRole = function(userId, oldRole, callback) {
         var urx = '/admin/',
             verb = Constants.REMOVE_ROLE,
@@ -290,4 +302,8 @@ var UserDriver =  module.exports = function(environment) {
             return callback(err, rslt);
         });
     };
+
+  /*  self.changePwd = function(newPwd, sessionToken, callback) {
+
+  }; */
 };

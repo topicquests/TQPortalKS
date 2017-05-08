@@ -11,7 +11,7 @@ exports.plugin = function(app, environment) {
     /////////////
     // Menu
     /////////////
-    environment.addApplicationToMenu("/search","Search");
+    environment.addApplicationToMenu("/srch","Search");
     /////////////
     // Routes
     /////////////
@@ -21,27 +21,28 @@ exports.plugin = function(app, environment) {
      */
     app.get("/search", helpers.isPrivate, function(req, res) {
         var query = req.query.srch_term,
-            data = environment.getCoreUIData(req);
-        data.start=0;
-        data.count=Constants.MAX_HIT_COUNT; //pagination size
-        data.total=0;
-
-        res.render("search" , data);
+            start=0,
+            language = "en",
+            data = environment.getCoreUIData(req),
+            count=Constants.MAX_HIT_COUNT, //pagination size
+            userId= helpers.getUserId(req),
+            userIP= "",
+            sToken= null;
+            console.log("QUERY "+query);
+        SearchModel.runSearch(query, "en", start, count, userId, userIP, sToken,
+              function searchRunSearch(rslt, countsent, totalavailable) {
+           //TODO
+           console.log("QUERY+ "+rslt);
+           if (count > 0) {
+             data.hits = rslt;
+           }
+           data.querystring = query;
+           return res.render("searchhits" , data);
+        });
     });
 
-    app.post("/search", helpers.isPrivate,function(req, res) {
-        var q = req.params.id,
-            start = helpers.validateNumber(parseInt(req.query.start)),
-            count = helpers.validateCount(parseInt(req.query.count));
-        if (!start) {
-            start = 0;
-        }
-        if (!count) {
-            count = Constants.MAX_HIT_COUNT;
-        }
-        //TODO req.user ???
-        SearchModel.runSearch(q, req.user, "en", start, count, function searchRunSearch(data, countsent, totalavailable) {
-           //TODO
-        });
+    app.get("/srch", helpers.isPrivate, function(req, res) {
+      var data = environment.getCoreUIData(req);
+      return res.render("search", data);
     });
 };

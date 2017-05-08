@@ -497,10 +497,15 @@ CommonModel =  module.exports = function(environment) {
             result.url = jsonTopic.url;
         }
         //DO NOT PAINT SYSTEM USER
+        //TODO we really need to show the userid but
+        // the username: this was painting an empty userid
+        // and the correct value in username
+        // so ctopic.hbs and topic.hbs were modified to use ueername
         if (jsonTopic.crtr !== 'SystemUser') {
             result.userid = jsonTopic.crtr;
             result.username = jsonTopic.crtr;
             result.date = jsonTopic.lEdDt;
+            result.isRealUser = true;
         }
         var pivots = jsonTopic.pvL;
         //Allow authenticated users to add tags
@@ -512,7 +517,7 @@ CommonModel =  module.exports = function(environment) {
         if (pivots) {
             var piv = extractTagPivots(pivots);
             if (piv) {
-
+                result.showTags = true;
                 result.tags = piv;
             }
             piv = extractUserPivots(pivots);

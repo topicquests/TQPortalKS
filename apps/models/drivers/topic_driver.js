@@ -132,6 +132,7 @@ TopicDriver =  module.exports = function(environment) {
         });
     };
 
+    /** we use listInstanceTopics
     self.listAllBlogPosts = function(start, count, userId, userIP, sToken, callback) {
       var urx = '/tm/',
           verb = Constants.LIST_ALL_BLOG_POSTS,
@@ -142,18 +143,21 @@ TopicDriver =  module.exports = function(environment) {
           return callback(err, rslt);
       });
     };
-
+    */
 //    self.listBlogPostsByUser = function(start, count, userId, userIP, sToken, callback) {
       //TODO
 //    };
 
-    self.listInstanceTopics = function(typeLocator, start, count, userId, userIP, sToken, callback) {
+    self.listInstanceTopics = function(typeLocator, start, count, sortBy, sortDir,
+                    userId, userIP, sToken, callback) {
         var urx = '/tm/',
             verb = Constants.LIST_INSTANCE_TOPICS,
             query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
         query.from = start.toString();
         query.count = count.toString();
         query.inOf = typeLocator;
+        query.sortBy = sortBy;
+        query.sortDir = sortDir;
         httpClient.get(urx, query, function tdLUT(err, rslt) {
             return callback(err, rslt);
         });
@@ -222,7 +226,7 @@ TopicDriver =  module.exports = function(environment) {
     };
 
     self.connectTwoTopics = function(jsonCargo, userId, userIP, sToken, callback) {
-      console.log("ConnectTwoTopics "+jsonCargo+" "+userId+" "+userIP+" "+sToken);
+      console.log("ConnectTwoTopics "+JSON.stringify(jsonCargo)+" "+userId+" "+userIP+" "+sToken);
       var urx = '/tm/',
           verb = Constants.ADD_RELATION,
           query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
@@ -235,7 +239,7 @@ TopicDriver =  module.exports = function(environment) {
 
 
     self.submitNewInstanceTopic = function(jsonTopic, userId, userIP, sToken, callback) {
-        console.log("SubmitNewInstanceTopic "+jsonTopic+" "+userId+" "+userIP+" "+sToken);
+        console.log("SubmitNewInstanceTopic "+JSON.stringify(jsonTopic)+" "+userId+" "+userIP+" "+sToken);
 //SubmitNewInstanceTopic [object Object] undefined [object Object] caccec2d-ff37-4f13-a622-d4a119f08467
         var urx = '/tm/',
             verb = Constants.NEW_INSTANCE_TOPIC,
@@ -310,7 +314,7 @@ TopicDriver =  module.exports = function(environment) {
     // The process is first: remove the list object from Topics, then
     // later insert it back after the fetch, ready for the client to paint
     ////////////////////////////////////////////////
-    self.listBookmarkTopics = function(start, count, userId, userIP, sToken) {
+/*    self.listBookmarkTopics = function(start, count, userId, userIP, sToken) {
         console.log("ServerListBookmarkTopics-");
         console.log("ServerListBookmarkTopics-1");
         var urx = '/tm/',
@@ -324,9 +328,9 @@ TopicDriver =  module.exports = function(environment) {
         httpClient.get(urx, query, function tdLUT(err, rslt) {
             return callback(err, rslt);
         });
-    };
+    }; */
 
-    self.listTagTopics = function(start, count, userId, userIP, sToken) {
+/*    self.listTagTopics = function(start, count, userId, userIP, sToken) {
         var urx = '/tm/',
             verb = Constants.LIST_INSTANCE_TOPICS,
             query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
@@ -338,6 +342,35 @@ TopicDriver =  module.exports = function(environment) {
         httpClient.get(urx, query, function tdLUT(err, rslt) {
             return callback(err, rslt);
         });
+    };
+*/
+    /**
+     * Full Text Search
+     * @param queryString
+     * @param start
+     * @param count
+     * @param sortBy  e.g. a field, can be <code>null</code>
+     * @param sortDir e.g. asc or desc can be <code>null</code>
+     * @param userId
+     * @param userIP
+     * @param sToken
+     */
+    self.fullTextQuery = function(queryString, start, count,
+          sortBy, sortDir, userId, userIP, sToken, callback) {
+      var urx = '/tm/',
+          verb = Constants.LIST_BY_TEXT_QUERY,
+          query = queryUtil.getCoreQuery(verb, userId, userIP, sToken);
+      query.from = start.toString();
+      query.count = count.toString();
+      if (sortBy !== null)
+        query.sortBy = sortBy;
+      if (sortDir !== null)
+        query.sortDir = sortDir;
+      query.QueryString = queryString;
+      console.log("ServerListByQuery "+JSON.stringify(query));
+      httpClient.get(urx, query, function tdLUT(err, rslt) {
+          return callback(err, rslt);
+      });
     };
 
 };

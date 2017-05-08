@@ -253,7 +253,7 @@ exports.plugin = function(app, environment) {
           sToken = req.session[Constants.SESSION_TOKEN];
       console.log("BlogEditPost "+JSON.stringify(body));
       _blogsupport(body, userId, userIP, sToken, function(err,result) {
-         console.log("BLOG_NEW_POST-2 "+err+" "+result);
+         console.log("BLOG_EDIT_POST-2 "+err+" "+result);
          //technically, this should return to "/" since Lucene is not ready to display
          // the new post; you have to refresh the page in any case
          return res.redirect("/blog");
