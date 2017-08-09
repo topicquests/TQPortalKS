@@ -1,5 +1,5 @@
 # TQPortalKS
-TQPortal for [BacksideServletKS](BacksideServletKS "https://github.com/KnowledgeGarden/BacksideServletKS")
+TQPortal for [BacksideServletKS](BacksideServletKS "https://github.com/topicquests/backside-servlet-ks")
 
 ## Overview ##
 TQPortalKS is the latest in a series of explorations in facilitating online collaboration and sense making.  The late Douglas Engelbart spoke of an ensemble composed of people, their knowledge, beliefs, aspirations, skills, and capabilities (social systems) coupled with the Information Technology (tool systems) they use to collaborate. He referred to that ensemble as a Dynamic Knowledge Repository (DKR).
