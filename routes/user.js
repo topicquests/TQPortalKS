@@ -51,7 +51,9 @@ exports.plugin = function(app, environment) {
                 if (credentials) {
                   var x = false,
                       where = credentials.indexOf(q);
-                  if (where < 0) {
+                  if (q === userId) {
+                        x = true;
+                  } else if (where < 0) {
                     var where2 = credentials.indexOf(Constants.ADMIN_CREDENTIALS);
                     if (where2 > -1) {x = true;}
                   } else {
